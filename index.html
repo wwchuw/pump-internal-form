@@ -3,429 +3,193 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Impeller & Liner Ring — MWA</title>
+<title>Impeller and Liner Ring — MWA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-/* ── DESIGN SYSTEM ── */
-:root {
-  --bg: #0f1117;
-  --bg2: #161b27;
-  --bg3: #1e2535;
-  --border: rgba(99,115,155,0.25);
-  --border2: rgba(99,115,155,0.45);
-  --blue: #3b82f6;
-  --blue2: #60a5fa;
-  --cyan: #06b6d4;
-  --green: #22c55e;
-  --red: #ef4444;
-  --yellow: #f59e0b;
-  --text: #e2e8f0;
-  --text2: #94a3b8;
-  --text3: #64748b;
-  --card: rgba(30,37,53,0.8);
-  --font: 'IBM Plex Sans Thai', 'Sarabun', sans-serif;
-  --mono: 'IBM Plex Mono', monospace;
+:root{
+  --bg:#0f1117;--bg2:#161b27;--bg3:#1e2535;
+  --border:rgba(99,115,155,0.25);--border2:rgba(99,115,155,0.45);
+  --blue:#3b82f6;--blue2:#60a5fa;--cyan:#06b6d4;
+  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --card:rgba(30,37,53,0.8);
+  --font:'IBM Plex Sans Thai','Sarabun',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-/* grid bg */
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image:
-    linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none; z-index: 0;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.04) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0}
 
-/* ── TOP BAR ── */
-.topbar {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(15,17,23,0.92);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex; align-items: center;
-  justify-content: space-between;
-  height: 56px;
-}
-.topbar-logo {
-  display: flex; align-items: center; gap: 12px;
-}
-.logo-icon {
-  width: 32px; height: 32px;
-  background: linear-gradient(135deg, var(--blue), var(--cyan));
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; color: #fff;
-}
-.logo-text { font-size: 14px; font-weight: 600; color: var(--text); }
-.logo-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.topbar-logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+.logo-text{font-size:14px;font-weight:600;color:var(--text)}
+.logo-sub{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{padding:6px 16px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.nav-tab:hover{color:var(--text);border-color:var(--border)}
+.nav-tab.active{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);color:var(--blue2)}
 
-.nav-tabs { display: flex; gap: 4px; }
-.nav-tab {
-  padding: 6px 16px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text2);
-  font-family: var(--font);
-  font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: all .2s;
-}
-.nav-tab:hover { color: var(--text); border-color: var(--border); }
-.nav-tab.active {
-  background: rgba(59,130,246,0.15);
-  border-color: rgba(59,130,246,0.4);
-  color: var(--blue2);
-}
+/* PAGES */
+.page{display:none;position:relative;z-index:1}
+.page.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wrap{max-width:900px;margin:0 auto;padding:32px 20px 80px}
 
-/* ── PAGES ── */
-.page { display: none; position: relative; z-index: 1; }
-.page.active { display: block; animation: fadeIn .25s ease; }
-@keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
-.wrap { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+/* LOGIN */
+#login-screen{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.login-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:40px;width:min(360px,90vw);text-align:center}
+.login-icon{font-size:40px;margin-bottom:16px}
+.login-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:28px}
+.login-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:var(--mono);font-size:16px;letter-spacing:.15em;text-align:center;outline:none;margin-bottom:14px;transition:border-color .2s}
+.login-input:focus{border-color:var(--blue)}
+.login-err{font-size:12px;color:var(--red);margin-bottom:12px;min-height:16px}
 
-/* ── LOGIN ── */
-#login-screen {
-  position: fixed; inset: 0; z-index: 500;
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-}
-.login-box {
-  background: var(--bg2);
-  border: 1px solid var(--border2);
-  border-radius: 16px;
-  padding: 40px;
-  width: min(360px, 90vw);
-  text-align: center;
-}
-.login-icon { font-size: 40px; margin-bottom: 16px; }
-.login-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-.login-sub { font-size: 12px; color: var(--text3); margin-bottom: 28px; }
-.login-input {
-  width: 100%;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 16px;
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 16px; letter-spacing: .15em;
-  text-align: center; outline: none;
-  margin-bottom: 14px;
-  transition: border-color .2s;
-}
-.login-input:focus { border-color: var(--blue); }
-.login-err { font-size: 12px; color: var(--red); margin-bottom: 12px; min-height: 16px; }
+/* FORM */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;backdrop-filter:blur(8px)}
+.form-card-title{font-size:13px;font-weight:600;color:var(--blue2);letter-spacing:.05em;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.form-card-title::before{content:'';width:3px;height:16px;background:var(--blue);border-radius:2px}
+.fgrid{display:grid;gap:14px}
+.fgrid-3{grid-template-columns:repeat(3,1fr)}
+.fgrid-2{grid-template-columns:repeat(2,1fr)}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.fg input,.fg select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:all .2s;width:100%}
+.fg input:focus,.fg select:focus{border-color:var(--blue);background:rgba(59,130,246,0.06)}
+.fg select option{background:#1e2535}
+.fg input[type="number"]{font-family:var(--mono)}
+.req::after{content:' *';color:var(--red)}
 
-/* ── SECTION HEADER ── */
-.sec-hd {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 20px; padding-top: 28px;
-}
-.sec-hd-line { flex: 1; height: 1px; background: var(--border); }
-.sec-hd-text {
-  font-size: 11px; font-weight: 600;
-  color: var(--text3); letter-spacing: .1em; text-transform: uppercase;
-  font-family: var(--mono);
-}
+/* CLEARANCE TABLE */
+.cl-table-wrap{overflow-x:auto;margin:8px 0}
+.cl-table{width:100%;border-collapse:collapse;font-size:12px;min-width:480px}
+.cl-table th{background:rgba(59,130,246,0.1);border:1px solid var(--border);padding:8px 12px;text-align:center;font-weight:600;color:var(--blue2);font-family:var(--mono);font-size:11px;letter-spacing:.05em}
+.cl-table td{border:1px solid var(--border);padding:4px 6px;text-align:center}
+.cl-table td.side-label{background:rgba(255,255,255,0.03);color:var(--text2);font-weight:500;font-size:11px}
+.cl-table td.ab-label{background:rgba(255,255,255,0.02);color:var(--text3);font-size:11px;font-family:var(--mono)}
+.cl-input{background:var(--bg3)!important;border:1px solid var(--border)!important;border-radius:6px!important;padding:6px 4px!important;color:var(--text)!important;font-family:var(--mono)!important;font-size:12px!important;text-align:center;width:60px;outline:none;transition:border-color .2s}
+.cl-input:focus{border-color:var(--blue)!important}
+.cl-input.over-limit{border-color:var(--red)!important;background:rgba(239,68,68,0.08)!important}
 
-/* ── FORM CARD ── */
-.form-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 24px;
-  margin-bottom: 16px;
-  backdrop-filter: blur(8px);
-}
-.form-card-title {
-  font-size: 13px; font-weight: 600;
-  color: var(--blue2); letter-spacing: .05em;
-  margin-bottom: 18px;
-  display: flex; align-items: center; gap: 8px;
-}
-.form-card-title::before {
-  content: '';
-  width: 3px; height: 16px;
-  background: var(--blue);
-  border-radius: 2px;
-}
+/* JUDGEMENT */
+.judge-wrap{display:flex;gap:12px;flex-wrap:wrap}
+.judge-opt{position:relative}
+.judge-opt input{position:absolute;opacity:0}
+.judge-opt label{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;font-size:13px;font-weight:500}
+.judge-opt input:checked+label.ok{border-color:var(--green);background:rgba(34,197,94,0.1);color:var(--green)}
+.judge-opt input:checked+label.ng{border-color:var(--red);background:rgba(239,68,68,0.1);color:var(--red)}
 
-.fgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-.fgrid-3 { grid-template-columns: repeat(3, 1fr); }
-.fgrid-2 { grid-template-columns: repeat(2, 1fr); }
-.fgrid-1 { grid-template-columns: 1fr; }
+/* BUTTONS */
+.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),#2563eb);border:none;border-radius:10px;color:#fff;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 4px 20px rgba(59,130,246,0.3);margin-top:8px}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(59,130,246,0.4)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-pdf{width:100%;padding:11px;border:1px solid rgba(6,182,212,0.4);border-radius:10px;background:rgba(6,182,212,0.08);color:var(--cyan);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px}
+.btn-pdf:hover{background:rgba(6,182,212,0.15)}
+.btn-pdf:disabled{opacity:.4;cursor:not-allowed}
 
-.fg { display: flex; flex-direction: column; gap: 5px; }
-.fg label {
-  font-size: 10px; font-weight: 600;
-  color: var(--text3); letter-spacing: .08em; text-transform: uppercase;
-}
-.fg input, .fg select, .fg textarea {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 12px;
-  color: var(--text);
-  font-family: var(--font); font-size: 13px;
-  outline: none; transition: all .2s;
-  width: 100%;
-}
-.fg input:focus, .fg select:focus { border-color: var(--blue); background: rgba(59,130,246,0.06); }
-.fg select option { background: #1e2535; }
-.fg input[type="number"] { font-family: var(--mono); }
-.req::after { content: ' *'; color: var(--red); }
+.docno-preview{font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:.05em;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:8px;padding:8px 14px;min-height:36px;display:flex;align-items:center}
 
-/* ── CLEARANCE TABLE ── */
-.cl-table-wrap { overflow-x: auto; margin: 8px 0; }
-.cl-table {
-  width: 100%; border-collapse: collapse;
-  font-size: 12px; min-width: 480px;
-}
-.cl-table th {
-  background: rgba(59,130,246,0.1);
-  border: 1px solid var(--border);
-  padding: 8px 12px; text-align: center;
-  font-weight: 600; color: var(--blue2);
-  font-family: var(--mono); font-size: 11px;
-  letter-spacing: .05em;
-}
-.cl-table td {
-  border: 1px solid var(--border);
-  padding: 4px 6px; text-align: center;
-}
-.cl-table td.side-label {
-  background: rgba(255,255,255,0.03);
-  color: var(--text2); font-weight: 500;
-  font-size: 11px; letter-spacing: .05em;
-}
-.cl-table td.ab-label {
-  background: rgba(255,255,255,0.02);
-  color: var(--text3); font-size: 11px;
-  font-family: var(--mono);
-}
-.cl-input {
-  background: var(--bg3) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
-  padding: 6px 4px !important;
-  color: var(--text) !important;
-  font-family: var(--mono) !important;
-  font-size: 12px !important;
-  text-align: center; width: 60px;
-  outline: none; transition: border-color .2s;
-}
-.cl-input:focus { border-color: var(--blue) !important; }
-.cl-input.over-limit { border-color: var(--red) !important; background: rgba(239,68,68,0.08) !important; }
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg2);border:1px solid var(--border2);border-radius:100px;padding:12px 28px;font-size:13px;font-weight:600;color:var(--text);z-index:999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:rgba(34,197,94,0.5);color:var(--green)}
+.toast.error{border-color:rgba(239,68,68,0.5);color:var(--red)}
 
-/* ── JUDGEMENT ── */
-.judge-wrap { display: flex; gap: 12px; flex-wrap: wrap; }
-.judge-opt { position: relative; }
-.judge-opt input { position: absolute; opacity: 0; }
-.judge-opt label {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 20px;
-  border: 1px solid var(--border);
-  border-radius: 10px; cursor: pointer;
-  transition: all .2s; font-size: 13px; font-weight: 500;
-}
-.judge-opt input:checked + label.ok { border-color: var(--green); background: rgba(34,197,94,0.1); color: var(--green); }
-.judge-opt input:checked + label.ng { border-color: var(--red); background: rgba(239,68,68,0.1); color: var(--red); }
-.judge-opt label:hover { border-color: var(--border2); }
+/* DASHBOARD */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.kpi-n{font-size:28px;font-weight:700;font-family:var(--mono);line-height:1}
+.kpi-l{font-size:11px;color:var(--text3);margin-top:6px;letter-spacing:.05em;text-transform:uppercase}
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.table-toolbar{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.table-title{font-size:13px;font-weight:600;color:var(--text2)}
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-sel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:var(--font);font-size:12px;outline:none}
+.filter-sel option{background:#1e2535}
+.btn-refresh{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:6px 14px;color:var(--blue2);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-refresh:hover{background:rgba(59,130,246,0.2)}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);padding:10px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono)}
+.data-table td{padding:10px 14px;border-bottom:1px solid rgba(99,115,155,0.1);color:var(--text)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(59,130,246,0.04)}
+.badge{display:inline-block;padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;font-family:var(--mono)}
+.badge-ok{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+.badge-ng{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+.badge-before{background:rgba(245,158,11,0.15);color:var(--yellow);border:1px solid rgba(245,158,11,0.3)}
+.badge-after{background:rgba(6,182,212,0.15);color:var(--cyan);border:1px solid rgba(6,182,212,0.3)}
+.badge-saved{background:rgba(99,115,155,0.15);color:var(--text2);border:1px solid var(--border)}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.4s infinite;vertical-align:middle;margin-right:6px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3);font-size:14px}
 
-/* ── SUBMIT BTN ── */
-.btn-submit {
-  width: 100%; padding: 14px;
-  background: linear-gradient(135deg, var(--blue), #2563eb);
-  border: none; border-radius: 10px;
-  color: #fff; font-family: var(--font);
-  font-size: 15px; font-weight: 700;
-  cursor: pointer; transition: all .3s;
-  box-shadow: 0 4px 20px rgba(59,130,246,0.3);
-  margin-top: 8px;
-}
-.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59,130,246,0.4); }
-.btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-/* ── DOC NO PREVIEW ── */
-.docno-preview {
-  font-family: var(--mono); font-size: 13px;
-  color: var(--cyan); letter-spacing: .05em;
-  background: rgba(6,182,212,0.08);
-  border: 1px solid rgba(6,182,212,0.2);
-  border-radius: 8px; padding: 8px 14px;
-  min-height: 36px; display: flex; align-items: center;
-}
-
-/* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 28px; left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--bg2); border: 1px solid var(--border2);
-  border-radius: 100px; padding: 12px 28px;
-  font-size: 13px; font-weight: 600; color: var(--text);
-  z-index: 999; transition: transform .4s cubic-bezier(.34,1.56,.64,1);
-  pointer-events: none; white-space: nowrap;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast.success { border-color: rgba(34,197,94,0.5); color: var(--green); }
-.toast.error { border-color: rgba(239,68,68,0.5); color: var(--red); }
-
-/* ══════════════════════════════════════
-   DASHBOARD
-══════════════════════════════════════ */
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.kpi-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 18px;
-  transition: border-color .2s;
-}
-.kpi-card:hover { border-color: var(--border2); }
-.kpi-n { font-size: 28px; font-weight: 700; font-family: var(--mono); line-height: 1; }
-.kpi-l { font-size: 11px; color: var(--text3); margin-top: 6px; letter-spacing: .05em; text-transform: uppercase; }
-
-.table-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 14px; overflow: hidden;
-}
-.table-toolbar {
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-}
-.table-title { font-size: 13px; font-weight: 600; color: var(--text2); }
-.filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.filter-sel {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 8px; padding: 6px 12px;
-  color: var(--text); font-family: var(--font); font-size: 12px;
-  outline: none; cursor: pointer;
-}
-.filter-sel option { background: #1e2535; }
-.btn-refresh {
-  background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
-  border-radius: 8px; padding: 6px 14px;
-  color: var(--blue2); font-family: var(--font);
-  font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s;
-}
-.btn-refresh:hover { background: rgba(59,130,246,0.2); }
-
-.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.data-table th {
-  background: rgba(255,255,255,0.03);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 14px; text-align: left;
-  font-size: 10px; font-weight: 600; color: var(--text3);
-  letter-spacing: .08em; text-transform: uppercase;
-  font-family: var(--mono);
-}
-.data-table td {
-  padding: 10px 14px; border-bottom: 1px solid rgba(99,115,155,0.1);
-  color: var(--text);
-}
-.data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: rgba(59,130,246,0.04); }
-.badge {
-  display: inline-block; padding: 2px 10px;
-  border-radius: 100px; font-size: 10px; font-weight: 700;
-  font-family: var(--mono);
-}
-.badge-ok { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
-.badge-ng { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
-.badge-before { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
-.badge-after { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
-.badge-saved { background: rgba(99,115,155,0.15); color: var(--text2); border: 1px solid var(--border); }
-
-.live-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-  display: inline-block; animation: pulse 1.4s infinite;
-  vertical-align: middle; margin-right: 6px;
-}
-@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)} 50%{box-shadow:0 0 0 5px rgba(34,197,94,0)} }
-
-.empty-state { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 14px; }
-
-@media (max-width: 640px) {
-  .fgrid-3, .fgrid-2 { grid-template-columns: 1fr; }
-  .cl-table { min-width: 360px; }
-  .topbar { padding: 0 14px; }
-  .wrap { padding: 20px 12px 60px; }
-  .kpi-grid { grid-template-columns: 1fr 1fr; }
+@media(max-width:640px){
+  .fgrid-3,.fgrid-2{grid-template-columns:1fr}
+  .topbar{padding:0 14px}
+  .wrap{padding:20px 12px 60px}
+  .kpi-grid{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN ── -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-icon">🔐</div>
-    <div class="login-title">Impeller & Liner Ring</div>
+    <div class="login-icon">&#x1F510;</div>
+    <div class="login-title">Impeller and Liner Ring</div>
     <div class="login-sub">Metropolitan Waterworks Authority</div>
-    <input class="login-input" type="password" id="pw-input" placeholder="••••••" maxlength="20"
+    <input class="login-input" type="password" id="pw-input" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;" maxlength="20"
       onkeydown="if(event.key==='Enter')doLogin()">
     <div class="login-err" id="login-err"></div>
     <button class="btn-submit" onclick="doLogin()">เข้าสู่ระบบ</button>
   </div>
 </div>
 
-<!-- ── TOPBAR ── -->
+<!-- TOPBAR -->
 <nav class="topbar">
   <div class="topbar-logo">
-    <div class="logo-icon">⚙</div>
+    <div class="logo-icon">&#x2699;</div>
     <div>
-      <div class="logo-text">Impeller & Liner Ring</div>
+      <div class="logo-text">Impeller and Liner Ring</div>
       <div class="logo-sub">MWA — PM Record System</div>
     </div>
   </div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="goPage('form')">📋 กรอกฟอร์ม</button>
-    <button class="nav-tab" onclick="goPage('dashboard')">📊 Dashboard</button>
+    <button class="nav-tab active" id="tab-form" onclick="goPage('form',this)">&#x1F4CB; กรอกฟอร์ม</button>
+    <button class="nav-tab" id="tab-dashboard" onclick="goPage('dashboard',this)">&#x1F4CA; Dashboard</button>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════
-     FORM PAGE
-══════════════════════════════════════ -->
+<!-- FORM PAGE -->
 <div class="page active" id="page-form">
 <div class="wrap">
 
-  <!-- Header Info -->
   <div class="form-card">
     <div class="form-card-title">ข้อมูลทั่วไป</div>
-    <div class="fgrid fgrid-3">
+    <div class="fgrid fgrid-3" style="margin-bottom:14px">
       <div class="fg">
         <label class="req">สถานที่ (Station)</label>
-        <select id="f-station" onchange="onStationChange()">
-          <option value="">— เลือก —</option>
-        </select>
+        <select id="f-station" onchange="onStationChange()"><option value="">— เลือก —</option></select>
       </div>
       <div class="fg">
         <label class="req">หมายเลขเครื่อง</label>
-        <select id="f-pump" onchange="onPumpChange()">
-          <option value="">— เลือก Station ก่อน —</option>
-        </select>
+        <select id="f-pump" onchange="onPumpChange()"><option value="">— เลือก Station ก่อน —</option></select>
       </div>
       <div class="fg">
         <label class="req">วันที่ตรวจ</label>
         <input type="date" id="f-date" oninput="updateDocNo()">
       </div>
     </div>
-    <div style="margin-top:14px;" class="fgrid fgrid-2">
+    <div class="fgrid fgrid-2" style="margin-bottom:14px">
       <div class="fg">
         <label>Permissible Limit (mm)</label>
-        <input type="text" id="f-limit" readonly style="color:var(--cyan);font-family:var(--mono);">
+        <input type="text" id="f-limit" readonly style="color:var(--cyan);font-family:var(--mono)">
       </div>
       <div class="fg">
         <label>Before / After</label>
@@ -435,28 +199,26 @@ body::before {
         </select>
       </div>
     </div>
-    <div style="margin-top:14px;" class="fgrid fgrid-2">
+    <div class="fgrid fgrid-2">
       <div class="fg">
         <label>เลขที่เอกสาร (Auto)</label>
         <div class="docno-preview" id="docno-preview">—</div>
       </div>
       <div class="fg">
         <label>เอกสารอ้างอิง</label>
-        <input type="text" id="f-footer" readonly style="color:var(--text3);font-size:11px;font-family:var(--mono);">
+        <input type="text" id="f-footer" readonly style="color:var(--text3);font-size:11px;font-family:var(--mono)">
       </div>
     </div>
   </div>
 
-  <!-- Clearance Table -->
   <div class="form-card">
     <div class="form-card-title">Clearance Data (Motor side view)</div>
-    <div class="sec-hd"><div class="sec-hd-line"></div><div class="sec-hd-text">ระยะห่าง (mm)</div><div class="sec-hd-line"></div></div>
     <div class="cl-table-wrap">
       <table class="cl-table">
         <thead>
           <tr>
             <th colspan="2">Position</th>
-            <th>0°</th><th>90°</th><th>180°</th><th>270°</th>
+            <th>0&deg;</th><th>90&deg;</th><th>180&deg;</th><th>270&deg;</th>
           </tr>
         </thead>
         <tbody>
@@ -493,78 +255,58 @@ body::before {
         </tbody>
       </table>
     </div>
-    <div style="margin-top:10px;font-size:11px;color:var(--text3)">
-      ⚠️ ค่าที่เกิน Limit จะแสดงเป็นสีแดงโดยอัตโนมัติ
-    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3)">&#x26A0;&#xFE0F; ค่าที่เกิน Limit จะแสดงเป็นสีแดงโดยอัตโนมัติ</div>
   </div>
 
-  <!-- Judgement -->
   <div class="form-card">
-    <div class="form-card-title">สรุปผล & ผู้รับผิดชอบ</div>
-    <div class="fg" style="margin-bottom:16px;">
+    <div class="form-card-title">สรุปผล และ ผู้รับผิดชอบ</div>
+    <div class="fg" style="margin-bottom:16px">
       <label class="req">Judgement</label>
       <div class="judge-wrap">
-        <div class="judge-opt">
-          <input type="radio" name="judge" id="j-ok" value="Acceptable">
-          <label class="ok" for="j-ok">✅ Acceptable</label>
-        </div>
-        <div class="judge-opt">
-          <input type="radio" name="judge" id="j-ng" value="Not Acceptable">
-          <label class="ng" for="j-ng">❌ Not Acceptable</label>
-        </div>
+        <div class="judge-opt"><input type="radio" name="judge" id="j-ok" value="Acceptable"><label class="ok" for="j-ok">Acceptable</label></div>
+        <div class="judge-opt"><input type="radio" name="judge" id="j-ng" value="Not Acceptable"><label class="ng" for="j-ng">Not Acceptable</label></div>
       </div>
     </div>
-    <div class="fgrid fgrid-2" style="margin-bottom:14px;">
+    <div class="fgrid fgrid-2" style="margin-bottom:14px">
       <div class="fg">
         <label>หมายเหตุ</label>
         <input type="text" id="f-remark" placeholder="(ถ้ามี)">
       </div>
     </div>
-    <div class="fgrid fgrid-2">
+    <div class="fgrid fgrid-2" style="margin-bottom:14px">
       <div class="fg">
         <label class="req">ผู้ตรวจวัด (Inspector)</label>
-        <select id="f-inspector" onchange="onInspectorChange()">
-          <option value="">— เลือก —</option>
-        </select>
+        <select id="f-inspector" onchange="onInspectorChange()"><option value="">— เลือก —</option></select>
       </div>
       <div class="fg">
         <label class="req">ผู้อนุมัติ (Approved by)</label>
-        <select id="f-approval" onchange="onApprovalChange()">
-          <option value="">— เลือก —</option>
-        </select>
+        <select id="f-approval" onchange="onApprovalChange()"><option value="">— เลือก —</option></select>
       </div>
     </div>
-    <div class="fgrid fgrid-2" style="margin-top:14px;">
+    <div class="fgrid fgrid-2">
       <div class="fg">
         <label>รหัสผ่าน</label>
-        <input type="password" id="f-password" placeholder="••••">
+        <input type="password" id="f-password" placeholder="&bull;&bull;&bull;&bull;">
       </div>
     </div>
-    <div style="margin-top:20px;">
-      <button class="btn-submit" id="submit-btn" onclick="submitForm()">✦ บันทึกข้อมูล</button>
-    </div>
+    <button class="btn-submit" id="submit-btn" onclick="submitForm()">&#x2726; บันทึกข้อมูล และ สร้าง PDF</button>
+    <button class="btn-pdf" id="pdf-only-btn" onclick="previewPDF()" disabled>&#x1F4C4; Preview PDF (ไม่บันทึกข้อมูล)</button>
   </div>
 
 </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     DASHBOARD PAGE
-══════════════════════════════════════ -->
+<!-- DASHBOARD PAGE -->
 <div class="page" id="page-dashboard">
 <div class="wrap">
-
-  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:28px;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:28px;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
-      <div style="font-size:20px;font-weight:700;color:var(--text)">
-        <span class="live-dot"></span>Impeller Dashboard
-      </div>
-      <div style="font-size:12px;color:var(--text3);margin-top:3px;">ข้อมูล real-time จาก Google Sheets</div>
+      <div style="font-size:20px;font-weight:700"><span class="live-dot"></span>Impeller Dashboard</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px">ข้อมูล real-time จาก Google Sheets</div>
     </div>
-    <button class="btn-refresh" onclick="loadDashboard()">↻ รีเฟรช</button>
+    <button class="btn-refresh" onclick="loadDashboard()">&#x21BB; รีเฟรช</button>
   </div>
 
-  <!-- KPIs -->
   <div class="kpi-grid" id="kpi-grid">
     <div class="kpi-card"><div class="kpi-n" style="color:var(--blue2)">—</div><div class="kpi-l">บันทึกทั้งหมด</div></div>
     <div class="kpi-card"><div class="kpi-n" style="color:var(--green)">—</div><div class="kpi-l">Acceptable</div></div>
@@ -573,16 +315,13 @@ body::before {
     <div class="kpi-card"><div class="kpi-n" style="color:var(--cyan)">—</div><div class="kpi-l">After</div></div>
   </div>
 
-  <!-- Filters + Table -->
   <div class="table-card">
     <div class="table-toolbar">
-      <div class="table-title">📋 ประวัติการบันทึก</div>
+      <div class="table-title">ประวัติการบันทึก</div>
       <div class="filter-row">
-        <select class="filter-sel" id="dash-station" onchange="filterDash()">
-          <option value="">ทุกสถานี</option>
-        </select>
+        <select class="filter-sel" id="dash-station" onchange="filterDash()"><option value="">ทุกสถานี</option></select>
         <select class="filter-sel" id="dash-ba" onchange="filterDash()">
-          <option value="">Before & After</option>
+          <option value="">Before and After</option>
           <option value="Before">Before</option>
           <option value="After">After</option>
         </select>
@@ -593,360 +332,484 @@ body::before {
         </select>
       </div>
     </div>
-    <div style="overflow-x:auto;">
+    <div style="overflow-x:auto">
       <table class="data-table">
         <thead>
           <tr>
-            <th>เลขที่เอกสาร</th>
-            <th>วันที่</th>
-            <th>สถานที่</th>
-            <th>เครื่อง</th>
-            <th>Before/After</th>
-            <th>Limit (mm)</th>
-            <th>Judgement</th>
-            <th>Inspector</th>
+            <th>เลขที่เอกสาร</th><th>วันที่</th><th>สถานที่</th>
+            <th>เครื่อง</th><th>B/A</th><th>Limit</th>
+            <th>Judgement</th><th>Inspector</th><th>PDF</th>
           </tr>
         </thead>
         <tbody id="dash-tbody">
-          <tr><td colspan="8" class="empty-state">กำลังโหลด...</td></tr>
+          <tr><td colspan="9" class="empty-state">กำลังโหลด...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-
 </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════
-//  CONFIG — แก้ตรงนี้
-// ══════════════════════════════════════
-const GAS_URL = 'YOUR_APPS_SCRIPT_URL_HERE'; // ← วาง URL จาก Apps Script Deploy
-const APP_PASSWORD = '1234'; // ← ต้องตรงกับ password ใน Apps Script
+// ============================================================
+//  CONFIG — แก้ 2 บรรทัดนี้
+// ============================================================
+const GAS_URL      = 'YOUR_APPS_SCRIPT_URL_HERE'; // วาง URL จาก Apps Script Deploy
+const APP_PASSWORD = '1234';                        // ต้องตรงกับ PASSWORD ใน Apps Script
 
 // ── STATE ──
-let equipData = [];
-let inspectorData = [];
-let approvalData = [];
-let dashData = [];
-let filteredDash = [];
-let selectedEquip = null;
-let inspectorRef = '';
-let approvalRef = '';
+let equipData=[], inspectorData=[], approvalData=[];
+let dashData=[], filteredDash=[];
+let selectedEquip=null, inspectorRef='', approvalRef='';
 
 // ── LOGIN ──
-function doLogin() {
-  const pw = document.getElementById('pw-input').value;
-  if (pw === APP_PASSWORD) {
-    document.getElementById('login-screen').style.display = 'none';
+function doLogin(){
+  const pw=document.getElementById('pw-input').value;
+  if(pw===APP_PASSWORD){
+    document.getElementById('login-screen').style.display='none';
     init();
   } else {
-    document.getElementById('login-err').textContent = '❌ รหัสผ่านไม่ถูกต้อง';
-    document.getElementById('pw-input').value = '';
+    document.getElementById('login-err').textContent='รหัสผ่านไม่ถูกต้อง';
+    document.getElementById('pw-input').value='';
     document.getElementById('pw-input').focus();
   }
 }
 
 // ── NAV ──
-function goPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach(b => {
-    if (b.textContent.includes(id === 'form' ? 'ฟอร์ม' : 'Dashboard')) b.classList.add('active');
-  });
-  if (id === 'dashboard') loadDashboard();
+function goPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='dashboard') loadDashboard();
 }
 
 // ── INIT ──
-async function init() {
-  setTodayDate();
-  await Promise.all([loadEquipment(), loadInspectors(), loadApprovals()]);
+async function init(){
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  updateDocNo();
+  await Promise.all([loadEquipment(),loadInspectors(),loadApprovals()]);
 }
 
-function setTodayDate() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('f-date').value = today;
+// ── EQUIPMENT ──
+async function loadEquipment(){
+  try{
+    const res=await fetch(GAS_URL+'?action=equip');
+    const json=await res.json();
+    equipData=json.data||[];
+    const stations=[...new Set(equipData.map(e=>e['สถานที่']))].sort();
+    const sel=document.getElementById('f-station');
+    sel.innerHTML='<option value="">— เลือก —</option>';
+    stations.forEach(s=>sel.innerHTML+=`<option value="${s}">${s}</option>`);
+  }catch(e){toast('โหลด Equipment ไม่สำเร็จ','error');}
+}
+
+function onStationChange(){
+  const st=document.getElementById('f-station').value;
+  const pumps=equipData.filter(e=>e['สถานที่']===st);
+  const sel=document.getElementById('f-pump');
+  sel.innerHTML='<option value="">— เลือกเครื่อง —</option>';
+  pumps.forEach(p=>sel.innerHTML+=`<option value="${p['หมายเลข']}">${p['Name']} (Limit: ${p['Limit_Gap_Ring']} mm)</option>`);
+  selectedEquip=null;
+  document.getElementById('f-limit').value='';
+  document.getElementById('f-footer').value='';
+  document.getElementById('pdf-only-btn').disabled=true;
   updateDocNo();
 }
 
-// ── LOAD EQUIPMENT ──
-async function loadEquipment() {
-  try {
-    const res = await fetch(`${GAS_URL}?action=equip`);
-    const json = await res.json();
-    equipData = json.data || [];
-    buildStationSelect();
-  } catch (e) {
-    toast('❌ โหลดข้อมูล Equipment ไม่สำเร็จ', 'error');
-  }
-}
-
-function buildStationSelect() {
-  const stations = [...new Set(equipData.map(e => e['สถานที่']))].sort();
-  const sel = document.getElementById('f-station');
-  sel.innerHTML = '<option value="">— เลือก —</option>';
-  stations.forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
-}
-
-function onStationChange() {
-  const station = document.getElementById('f-station').value;
-  const pumps = equipData.filter(e => e['สถานที่'] === station);
-  const sel = document.getElementById('f-pump');
-  sel.innerHTML = '<option value="">— เลือกเครื่อง —</option>';
-  pumps.forEach(p => {
-    sel.innerHTML += `<option value="${p['หมายเลข']}">${p['Name']} (Limit: ${p['Limit_Gap_Ring']} mm)</option>`;
-  });
-  selectedEquip = null;
-  clearEquipInfo();
-  updateDocNo();
-}
-
-function onPumpChange() {
-  const station = document.getElementById('f-station').value;
-  const pumpNo = document.getElementById('f-pump').value;
-  selectedEquip = equipData.find(e => e['สถานที่'] === station && String(e['หมายเลข']) === String(pumpNo));
-  if (selectedEquip) {
-    document.getElementById('f-limit').value = selectedEquip['Limit_Gap_Ring'] + ' mm';
-    document.getElementById('f-footer').value = selectedEquip['Footer_Im_ring'];
+function onPumpChange(){
+  const st=document.getElementById('f-station').value;
+  const pn=document.getElementById('f-pump').value;
+  selectedEquip=equipData.find(e=>e['สถานที่']===st&&String(e['หมายเลข'])===String(pn));
+  if(selectedEquip){
+    document.getElementById('f-limit').value=selectedEquip['Limit_Gap_Ring']+' mm';
+    document.getElementById('f-footer').value=selectedEquip['Footer_Im_ring'];
     recheckAllLimits();
   }
+  document.getElementById('pdf-only-btn').disabled=!selectedEquip;
   updateDocNo();
 }
 
-function clearEquipInfo() {
-  document.getElementById('f-limit').value = '';
-  document.getElementById('f-footer').value = '';
+// ── INSPECTOR / APPROVAL ──
+async function loadInspectors(){
+  try{
+    const res=await fetch(GAS_URL+'?action=inspector');
+    const json=await res.json();
+    inspectorData=json.data||[];
+    const sel=document.getElementById('f-inspector');
+    sel.innerHTML='<option value="">— เลือก —</option>';
+    inspectorData.forEach(i=>sel.innerHTML+=`<option value="${i['EmID']}">${i['Inspector_Name']}</option>`);
+  }catch(e){}
 }
 
-// ── LOAD INSPECTORS / APPROVAL ──
-async function loadInspectors() {
-  try {
-    const res = await fetch(`${GAS_URL}?action=inspector`);
-    const json = await res.json();
-    inspectorData = json.data || [];
-    const sel = document.getElementById('f-inspector');
-    sel.innerHTML = '<option value="">— เลือก —</option>';
-    inspectorData.forEach(i => {
-      sel.innerHTML += `<option value="${i['EmID']}">${i['Inspector_Name']}</option>`;
-    });
-  } catch (e) {}
+async function loadApprovals(){
+  try{
+    const res=await fetch(GAS_URL+'?action=approval');
+    const json=await res.json();
+    approvalData=json.data||[];
+    const sel=document.getElementById('f-approval');
+    sel.innerHTML='<option value="">— เลือก —</option>';
+    approvalData.forEach(a=>sel.innerHTML+=`<option value="${a['EmID']}">${a['Approval_Name']}</option>`);
+  }catch(e){}
 }
 
-async function loadApprovals() {
-  try {
-    const res = await fetch(`${GAS_URL}?action=approval`);
-    const json = await res.json();
-    approvalData = json.data || [];
-    const sel = document.getElementById('f-approval');
-    sel.innerHTML = '<option value="">— เลือก —</option>';
-    approvalData.forEach(a => {
-      sel.innerHTML += `<option value="${a['EmID']}">${a['Approval_Name']}</option>`;
-    });
-  } catch (e) {}
+function onInspectorChange(){
+  const id=document.getElementById('f-inspector').value;
+  const ins=inspectorData.find(i=>String(i['EmID'])===String(id));
+  inspectorRef=ins?ins['Inspector_Signature']:'';
 }
 
-function onInspectorChange() {
-  const id = document.getElementById('f-inspector').value;
-  const ins = inspectorData.find(i => String(i['EmID']) === String(id));
-  inspectorRef = ins ? ins['Inspector_Signature'] : '';
-}
-
-function onApprovalChange() {
-  const id = document.getElementById('f-approval').value;
-  const apr = approvalData.find(a => String(a['EmID']) === String(id));
-  approvalRef = apr ? apr['Approval_Signature'] : '';
+function onApprovalChange(){
+  const id=document.getElementById('f-approval').value;
+  const apr=approvalData.find(a=>String(a['EmID'])===String(id));
+  approvalRef=apr?apr['Approval_Signature']:'';
 }
 
 // ── DOC NO ──
-function updateDocNo() {
-  const date = document.getElementById('f-date').value;
-  const station = document.getElementById('f-station').value;
-  const pump = document.getElementById('f-pump').value;
-  if (!date || !station || !pump) { document.getElementById('docno-preview').textContent = '—'; return; }
-  const dateStr = date.replace(/-/g, '').slice(2); // YYMMDD
-  document.getElementById('docno-preview').textContent = `${dateStr}_${station}_${pump}Imp###`;
+function updateDocNo(){
+  const date=document.getElementById('f-date').value;
+  const st=document.getElementById('f-station').value;
+  const pn=document.getElementById('f-pump').value;
+  if(!date||!st||!pn){document.getElementById('docno-preview').textContent='—';return;}
+  const ds=date.replace(/-/g,'').slice(2);
+  document.getElementById('docno-preview').textContent=ds+'_'+st+'_'+pn+'Imp###';
 }
 
 // ── LIMIT CHECK ──
-function checkLimit(input) {
-  if (!selectedEquip) return;
-  const limit = parseFloat(selectedEquip['Limit_Gap_Ring']);
-  const val = parseFloat(input.value);
-  if (!isNaN(val) && !isNaN(limit) && val > limit) {
-    input.classList.add('over-limit');
-  } else {
-    input.classList.remove('over-limit');
-  }
+function checkLimit(inp){
+  if(!selectedEquip) return;
+  const lim=parseFloat(selectedEquip['Limit_Gap_Ring']);
+  const val=parseFloat(inp.value);
+  inp.classList.toggle('over-limit',!isNaN(val)&&!isNaN(lim)&&val>lim);
 }
+function recheckAllLimits(){document.querySelectorAll('.cl-input').forEach(i=>checkLimit(i));}
 
-function recheckAllLimits() {
-  document.querySelectorAll('.cl-input').forEach(inp => checkLimit(inp));
+// ── GET FORM DATA ──
+function getFormData(password){
+  return {
+    action:'save', password,
+    station:document.getElementById('f-station').value,
+    pump_no:document.getElementById('f-pump').value,
+    date:document.getElementById('f-date').value,
+    name:selectedEquip?.['Name']||'',
+    footer:selectedEquip?.['Footer_Im_ring']||'',
+    limit:selectedEquip?.['Limit_Gap_Ring']||'',
+    before_after:document.getElementById('f-beforeafter').value,
+    judgement:document.querySelector('input[name="judge"]:checked')?.value||'',
+    remark:document.getElementById('f-remark').value,
+    inspector_name:document.getElementById('f-inspector').selectedOptions[0]?.text||'',
+    approval_name:document.getElementById('f-approval').selectedOptions[0]?.text||'',
+    inspector_ref:inspectorRef, approval_ref:approvalRef,
+    end_a_0:document.getElementById('end_a_0').value||'',
+    end_a_90:document.getElementById('end_a_90').value||'',
+    end_a_180:document.getElementById('end_a_180').value||'',
+    end_a_270:document.getElementById('end_a_270').value||'',
+    end_b_0:document.getElementById('end_b_0').value||'',
+    end_b_90:document.getElementById('end_b_90').value||'',
+    end_b_180:document.getElementById('end_b_180').value||'',
+    end_b_270:document.getElementById('end_b_270').value||'',
+    coupling_a_0:document.getElementById('coupling_a_0').value||'',
+    coupling_a_90:document.getElementById('coupling_a_90').value||'',
+    coupling_a_180:document.getElementById('coupling_a_180').value||'',
+    coupling_a_270:document.getElementById('coupling_a_270').value||'',
+    coupling_b_0:document.getElementById('coupling_b_0').value||'',
+    coupling_b_90:document.getElementById('coupling_b_90').value||'',
+    coupling_b_180:document.getElementById('coupling_b_180').value||'',
+    coupling_b_270:document.getElementById('coupling_b_270').value||'',
+  };
 }
 
 // ── SUBMIT ──
-async function submitForm() {
-  const station = document.getElementById('f-station').value;
-  const pump = document.getElementById('f-pump').value;
-  const date = document.getElementById('f-date').value;
-  const password = document.getElementById('f-password').value;
-  const judge = document.querySelector('input[name="judge"]:checked')?.value;
+async function submitForm(){
+  const st=document.getElementById('f-station').value;
+  const pn=document.getElementById('f-pump').value;
+  const dt=document.getElementById('f-date').value;
+  const pw=document.getElementById('f-password').value;
+  const jd=document.querySelector('input[name="judge"]:checked')?.value;
+  if(!st||!pn||!dt) return toast('กรุณาเลือก Station เครื่อง และวันที่','error');
+  if(!jd)  return toast('กรุณาระบุ Judgement','error');
+  if(!document.getElementById('f-inspector').value) return toast('กรุณาเลือก Inspector','error');
+  if(!document.getElementById('f-approval').value)  return toast('กรุณาเลือก ผู้อนุมัติ','error');
+  if(!pw) return toast('กรุณาใส่รหัสผ่าน','error');
 
-  if (!station || !pump || !date) return toast('❌ กรุณาเลือก Station, เครื่อง และวันที่', 'error');
-  if (!judge) return toast('❌ กรุณาระบุ Judgement', 'error');
-  if (!document.getElementById('f-inspector').value) return toast('❌ กรุณาเลือก Inspector', 'error');
-  if (!document.getElementById('f-approval').value) return toast('❌ กรุณาเลือก ผู้อนุมัติ', 'error');
-  if (!password) return toast('❌ กรุณาใส่รหัสผ่าน', 'error');
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='กำลังบันทึก...';
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
+  const fd=getFormData(pw);
 
-  const payload = {
-    action: 'save', password,
-    station, pump_no: pump, date,
-    name: selectedEquip?.['Name'] || '',
-    footer: selectedEquip?.['Footer_Im_ring'] || '',
-    limit: selectedEquip?.['Limit_Gap_Ring'] || '',
-    before_after: document.getElementById('f-beforeafter').value,
-    judgement: judge,
-    remark: document.getElementById('f-remark').value,
-    inspector_name: document.getElementById('f-inspector').selectedOptions[0]?.text,
-    approval_name: document.getElementById('f-approval').selectedOptions[0]?.text,
-    inspector_ref: inspectorRef,
-    approval_ref: approvalRef,
-    end_a_0: document.getElementById('end_a_0').value || '',
-    end_a_90: document.getElementById('end_a_90').value || '',
-    end_a_180: document.getElementById('end_a_180').value || '',
-    end_a_270: document.getElementById('end_a_270').value || '',
-    end_b_0: document.getElementById('end_b_0').value || '',
-    end_b_90: document.getElementById('end_b_90').value || '',
-    end_b_180: document.getElementById('end_b_180').value || '',
-    end_b_270: document.getElementById('end_b_270').value || '',
-    coupling_a_0: document.getElementById('coupling_a_0').value || '',
-    coupling_a_90: document.getElementById('coupling_a_90').value || '',
-    coupling_a_180: document.getElementById('coupling_a_180').value || '',
-    coupling_a_270: document.getElementById('coupling_a_270').value || '',
-    coupling_b_0: document.getElementById('coupling_b_0').value || '',
-    coupling_b_90: document.getElementById('coupling_b_90').value || '',
-    coupling_b_180: document.getElementById('coupling_b_180').value || '',
-    coupling_b_270: document.getElementById('coupling_b_270').value || '',
+  try{
+    // 1. บันทึก Sheets
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(fd)});
+    const json=await res.json();
+    if(json.status!=='ok'){toast(json.message||'บันทึกไม่สำเร็จ','error');return;}
+
+    const docNo=json.docNo;
+    toast('บันทึกสำเร็จ เลขที่: '+docNo,'success');
+
+    // 2. สร้าง PDF
+    btn.textContent='กำลังสร้าง PDF...';
+    const pdfData={...fd,docNo};
+    const doc=await generatePDF(pdfData);
+
+    // ดาวน์โหลดลงเครื่อง
+    doc.save(docNo+'.pdf');
+
+    // ส่ง Drive
+    btn.textContent='กำลังอัพโหลด Drive...';
+    const b64=doc.output('datauristring').split(',')[1];
+    const drRes=await fetch(GAS_URL,{
+      method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'save_pdf',password:pw,docNo,pdfBase64:b64})
+    });
+    const drJson=await drRes.json();
+    if(drJson.status==='ok') toast('PDF บันทึกใน Google Drive แล้ว','success');
+    else toast('PDF Drive: '+drJson.message,'error');
+
+    resetForm();
+  }catch(e){
+    toast('เชื่อมต่อ Server ไม่สำเร็จ','error');
+  }finally{
+    btn.disabled=false; btn.textContent='บันทึกข้อมูล และ สร้าง PDF';
+  }
+}
+
+// ── PREVIEW PDF ──
+async function previewPDF(){
+  if(!selectedEquip) return;
+  const fd=getFormData('');
+  const ds=fd.date.replace(/-/g,'').slice(2);
+  fd.docNo=ds+'_'+fd.station+'_'+fd.pump_no+'ImpXXX';
+  const doc=await generatePDF(fd);
+  doc.save('Preview_'+fd.docNo+'.pdf');
+}
+
+function resetForm(){
+  document.querySelectorAll('.cl-input').forEach(i=>{i.value='';i.classList.remove('over-limit');});
+  document.getElementById('f-remark').value='';
+  const ch=document.querySelector('input[name="judge"]:checked');
+  if(ch) ch.checked=false;
+}
+
+// ============================================================
+//  PDF GENERATOR
+// ============================================================
+async function generatePDF(fd){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,M=15;
+  let y=15;
+
+  const ln=(x1,y1,x2,y2,c)=>{doc.setDrawColor(...(c||[180,180,180]));doc.line(x1,y1,x2,y2);};
+  const tx=(t,x,yy,o)=>{
+    o=o||{};
+    doc.setFontSize(o.size||9);
+    doc.setFont('helvetica',o.bold?'bold':'normal');
+    doc.setTextColor(...(o.color||[30,30,30]));
+    doc.text(String(t||''),x,yy,{align:o.align||'left'});
+  };
+  const bx=(x,yy,w,h,fill)=>{
+    if(fill){doc.setFillColor(...fill);doc.rect(x,yy,w,h,'F');}
+    doc.setDrawColor(180,180,180);doc.rect(x,yy,w,h,'S');
   };
 
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      toast(`✅ บันทึกสำเร็จ! เลขที่: ${json.docNo}`, 'success');
-      resetForm();
-    } else {
-      toast(`❌ ${json.message}`, 'error');
+  // HEADER
+  doc.setFillColor(24,95,165);
+  doc.rect(M,y,W-M*2,10,'F');
+  tx('Clearance between Impeller and Liner Ring',W/2,y+7,{size:12,bold:true,color:[255,255,255],align:'center'});
+  y+=14;
+
+  // INFO ROW 1
+  tx('Station :',M,y+4,{size:9,bold:true});
+  bx(M+18,y,35,6); tx(fd.station||'',M+20,y+4.5,{size:9});
+  tx('Date :',M+60,y+4,{size:9,bold:true});
+  bx(M+73,y,35,6); tx(fd.date||'',M+75,y+4.5,{size:9});
+  tx('Doc No. :',M+115,y+4,{size:9,bold:true});
+  bx(M+130,y,48,6); tx(fd.docNo||'',M+132,y+4.5,{size:7.5,color:[20,80,160]});
+  y+=10;
+
+  // INFO ROW 2
+  tx('Pump No. :',M,y+4,{size:9,bold:true});
+  bx(M+20,y,25,6); tx(String(fd.pump_no||''),M+22,y+4.5,{size:9});
+  tx('Before/After :',M+55,y+4,{size:9,bold:true});
+  bx(M+82,y,25,6); tx(fd.before_after||'',M+84,y+4.5,{size:9});
+  tx('Permissible Limit :',M+115,y+4,{size:9,bold:true});
+  bx(M+148,y,18,6); tx(String(fd.limit||''),M+150,y+4.5,{size:9,color:[15,110,86]});
+  tx('mm',M+168,y+4,{size:8});
+  y+=10;
+
+  tx('Document Ref. :',M,y+4,{size:8,bold:true,color:[100,100,100]});
+  tx(fd.footer||'',M+30,y+4,{size:8,color:[100,100,100]});
+  y+=10;
+
+  ln(M,y,W-M,y); y+=6;
+
+  // TABLE TITLE
+  doc.setFillColor(230,241,251);doc.rect(M,y,W-M*2,7,'F');
+  tx('Clearance Data  (Motor side view)',W/2,y+5,{size:10,bold:true,color:[12,68,124],align:'center'});
+  y+=11;
+
+  // TABLE HEADER
+  const colW=[28,10,25,25,25,25];
+  const colX=[M];
+  colW.forEach((w,i)=>{if(i>0)colX.push(colX[i-1]+colW[i-1]);});
+  const hdrs=['Position','','0 deg','90 deg','180 deg','270 deg'];
+  doc.setFillColor(24,95,165);
+  let hX=M;
+  hdrs.forEach((c,i)=>{
+    doc.rect(hX,y,colW[i],7,'F');
+    tx(c,hX+colW[i]/2,y+5,{size:9,bold:true,color:[255,255,255],align:'center'});
+    hX+=colW[i];
+  });
+  y+=7;
+
+  // TABLE ROWS
+  const rows=[
+    {side:'End side',   ab:'a',vals:[fd.end_a_0,fd.end_a_90,fd.end_a_180,fd.end_a_270]},
+    {side:'',           ab:'b',vals:[fd.end_b_0,fd.end_b_90,fd.end_b_180,fd.end_b_270]},
+    {side:'Coupling side',ab:'a',vals:[fd.coupling_a_0,fd.coupling_a_90,fd.coupling_a_180,fd.coupling_a_270]},
+    {side:'',           ab:'b',vals:[fd.coupling_b_0,fd.coupling_b_90,fd.coupling_b_180,fd.coupling_b_270]},
+  ];
+  const lim=parseFloat(fd.limit)||9999;
+  rows.forEach((r,ri)=>{
+    const rH=8,bg=ri%2===0?[248,247,244]:[255,255,255];
+    if(r.side){
+      doc.setFillColor(...bg);doc.rect(colX[0],y,colW[0],rH*2,'F');
+      doc.setDrawColor(180,180,180);doc.rect(colX[0],y,colW[0],rH*2,'S');
+      tx(r.side,colX[0]+colW[0]/2,y+rH,{size:8,bold:true,align:'center',color:[40,40,40]});
     }
-  } catch (e) {
-    toast('❌ เชื่อมต่อ Server ไม่สำเร็จ', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '✦ บันทึกข้อมูล';
+    doc.setFillColor(...bg);doc.rect(colX[1],y,colW[1],rH,'F');
+    doc.setDrawColor(180,180,180);doc.rect(colX[1],y,colW[1],rH,'S');
+    tx(r.ab,colX[1]+colW[1]/2,y+5.5,{size:9,bold:true,align:'center',color:[80,80,80]});
+    r.vals.forEach((val,vi)=>{
+      const cx=colX[vi+2],cw=colW[vi+2];
+      const nv=parseFloat(val),over=!isNaN(nv)&&nv>lim;
+      doc.setFillColor(...(over?[252,235,235]:bg));
+      doc.rect(cx,y,cw,rH,'F');doc.setDrawColor(180,180,180);doc.rect(cx,y,cw,rH,'S');
+      if(val!==''&&val!=null) tx(String(val),cx+cw/2,y+5.5,{size:9,align:'center',color:over?[163,45,45]:[30,30,30]});
+    });
+    y+=rH;
+  });
+  y+=6;
+
+  // JUDGEMENT
+  const isOk=fd.judgement==='Acceptable';
+  doc.setFillColor(230,241,251);doc.rect(M,y,55,8,'F');
+  doc.setDrawColor(180,180,180);doc.rect(M,y,55,8,'S');
+  tx('Judgement :',M+2,y+5.5,{size:9,bold:true,color:[12,68,124]});
+  doc.setFillColor(...(isOk?[234,243,222]:[252,235,235]));
+  doc.rect(M+57,y,50,8,'F');
+  doc.setDrawColor(...(isOk?[99,153,34]:[163,45,45]));
+  doc.rect(M+57,y,50,8,'S');
+  tx(fd.judgement||'',M+82,y+5.5,{size:9,bold:true,align:'center',color:isOk?[59,109,17]:[163,45,45]});
+  if(fd.remark){tx('Remark :',M+115,y+5.5,{size:8,bold:true});tx(fd.remark,M+132,y+5.5,{size:8});}
+  y+=14;
+
+  // SIGNATURES
+  ln(M,y,W-M,y);y+=6;
+  const sW=(W-M*2-8)/2;
+  bx(M,y,sW,22);
+  tx('Person in charge :',M+2,y+5,{size:8,bold:true,color:[80,80,80]});
+  tx(fd.inspector_name||'',M+sW/2,y+14,{size:9,bold:true,align:'center'});
+  ln(M+8,y+18,M+sW-8,y+18);
+  tx('Signature',M+sW/2,y+22,{size:7.5,color:[130,130,130],align:'center'});
+  const s2=M+sW+8;
+  bx(s2,y,sW,22);
+  tx('Approved by :',s2+2,y+5,{size:8,bold:true,color:[80,80,80]});
+  tx(fd.approval_name||'',s2+sW/2,y+14,{size:9,bold:true,align:'center'});
+  ln(s2+8,y+18,s2+sW-8,y+18);
+  tx('Signature',s2+sW/2,y+22,{size:7.5,color:[130,130,130],align:'center'});
+  y+=28;
+
+  // FOOTER
+  ln(M,y,W-M,y);y+=4;
+  tx('Metropolitan Waterworks Authority  —  PM Record System',W/2,y+3,{size:7,color:[150,150,150],align:'center'});
+  tx('Generated: '+new Date().toLocaleString('th-TH'),W/2,y+7,{size:7,color:[150,150,150],align:'center'});
+
+  return doc;
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+async function loadDashboard(){
+  try{
+    const res=await fetch(GAS_URL+'?action=read');
+    const json=await res.json();
+    dashData=json.data||[];
+    filteredDash=dashData;
+    const stations=[...new Set(dashData.map(r=>r['สถานที่']))].filter(Boolean).sort();
+    const ssel=document.getElementById('dash-station');
+    const cur=ssel.value;
+    ssel.innerHTML='<option value="">ทุกสถานี</option>';
+    stations.forEach(s=>ssel.innerHTML+=`<option value="${s}"${s===cur?' selected':''}>${s}</option>`);
+    renderKPIs();filterDash();
+  }catch(e){
+    document.getElementById('dash-tbody').innerHTML='<tr><td colspan="9" class="empty-state">โหลดข้อมูลไม่สำเร็จ</td></tr>';
   }
 }
 
-function resetForm() {
-  document.querySelectorAll('.cl-input').forEach(i => { i.value = ''; i.classList.remove('over-limit'); });
-  document.getElementById('f-remark').value = '';
-  document.querySelector('input[name="judge"]:checked') && (document.querySelector('input[name="judge"]:checked').checked = false);
+function renderKPIs(){
+  const total=dashData.length;
+  const ok=dashData.filter(r=>r['สรุปผล']==='Acceptable').length;
+  const ng=dashData.filter(r=>r['สรุปผล']==='Not Acceptable').length;
+  const bef=dashData.filter(r=>r['Before or After']==='Before').length;
+  const aft=dashData.filter(r=>r['Before or After']==='After').length;
+  document.getElementById('kpi-grid').innerHTML=
+    '<div class="kpi-card"><div class="kpi-n" style="color:var(--blue2)">'+total+'</div><div class="kpi-l">บันทึกทั้งหมด</div></div>'+
+    '<div class="kpi-card"><div class="kpi-n" style="color:var(--green)">'+ok+'</div><div class="kpi-l">Acceptable</div></div>'+
+    '<div class="kpi-card"><div class="kpi-n" style="color:var(--red)">'+ng+'</div><div class="kpi-l">Not Acceptable</div></div>'+
+    '<div class="kpi-card"><div class="kpi-n" style="color:var(--yellow)">'+bef+'</div><div class="kpi-l">Before</div></div>'+
+    '<div class="kpi-card"><div class="kpi-n" style="color:var(--cyan)">'+aft+'</div><div class="kpi-l">After</div></div>';
 }
 
-// ── DASHBOARD ──
-async function loadDashboard() {
-  try {
-    const [recRes, equipRes] = await Promise.all([
-      fetch(`${GAS_URL}?action=read`),
-      fetch(`${GAS_URL}?action=equip`)
-    ]);
-    const recJson = await recRes.json();
-    const eqJson = await equipRes.json();
-    dashData = recJson.data || [];
-    filteredDash = dashData;
-
-    // Build station filter
-    const stations = [...new Set(dashData.map(r => r['สถานที่']))].filter(Boolean).sort();
-    const ssel = document.getElementById('dash-station');
-    const cur = ssel.value;
-    ssel.innerHTML = '<option value="">ทุกสถานี</option>';
-    stations.forEach(s => ssel.innerHTML += `<option value="${s}" ${s===cur?'selected':''}>${s}</option>`);
-
-    renderKPIs();
-    filterDash();
-  } catch (e) {
-    document.getElementById('dash-tbody').innerHTML = '<tr><td colspan="8" class="empty-state">❌ โหลดข้อมูลไม่สำเร็จ</td></tr>';
-  }
-}
-
-function renderKPIs() {
-  const total = dashData.length;
-  const ok = dashData.filter(r => r['สรุปผล'] === 'Acceptable').length;
-  const ng = dashData.filter(r => r['สรุปผล'] === 'Not Acceptable').length;
-  const before = dashData.filter(r => r['Before or After'] === 'Before').length;
-  const after = dashData.filter(r => r['Before or After'] === 'After').length;
-  document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="kpi-n" style="color:var(--blue2)">${total}</div><div class="kpi-l">บันทึกทั้งหมด</div></div>
-    <div class="kpi-card"><div class="kpi-n" style="color:var(--green)">${ok}</div><div class="kpi-l">Acceptable</div></div>
-    <div class="kpi-card"><div class="kpi-n" style="color:var(--red)">${ng}</div><div class="kpi-l">Not Acceptable</div></div>
-    <div class="kpi-card"><div class="kpi-n" style="color:var(--yellow)">${before}</div><div class="kpi-l">Before</div></div>
-    <div class="kpi-card"><div class="kpi-n" style="color:var(--cyan)">${after}</div><div class="kpi-l">After</div></div>
-  `;
-}
-
-function filterDash() {
-  const station = document.getElementById('dash-station').value;
-  const ba = document.getElementById('dash-ba').value;
-  const judge = document.getElementById('dash-judge').value;
-  filteredDash = dashData.filter(r =>
-    (!station || r['สถานที่'] === station) &&
-    (!ba || r['Before or After'] === ba) &&
-    (!judge || r['สรุปผล'] === judge)
-  );
+function filterDash(){
+  const st=document.getElementById('dash-station').value;
+  const ba=document.getElementById('dash-ba').value;
+  const jd=document.getElementById('dash-judge').value;
+  filteredDash=dashData.filter(r=>
+    (!st||r['สถานที่']===st)&&(!ba||r['Before or After']===ba)&&(!jd||r['สรุปผล']===jd));
   renderTable();
 }
 
-function renderTable() {
-  const tbody = document.getElementById('dash-tbody');
-  if (!filteredDash.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">ไม่มีข้อมูลที่ตรงกับเงื่อนไข</td></tr>';
+function renderTable(){
+  const tbody=document.getElementById('dash-tbody');
+  if(!filteredDash.length){
+    tbody.innerHTML='<tr><td colspan="9" class="empty-state">ไม่มีข้อมูลที่ตรงกับเงื่อนไข</td></tr>';
     return;
   }
-  tbody.innerHTML = [...filteredDash].reverse().map(r => {
-    const dateVal = r['วันที่'];
-    const dateStr = dateVal ? new Date(dateVal).toLocaleDateString('th-TH', {year:'numeric',month:'short',day:'numeric'}) : '—';
-    const ba = r['Before or After'] || '—';
-    const judge = r['สรุปผล'] || '—';
-    const judgeClass = judge === 'Acceptable' ? 'badge-ok' : judge === 'Not Acceptable' ? 'badge-ng' : 'badge-saved';
-    const baClass = ba === 'Before' ? 'badge-before' : ba === 'After' ? 'badge-after' : '';
-    return `<tr>
-      <td style="font-family:var(--mono);font-size:11px;color:var(--text2)">${r['เลขที่เอกสาร']||'—'}</td>
-      <td>${dateStr}</td>
-      <td><span class="badge badge-saved">${r['สถานที่']||'—'}</span></td>
-      <td>${r['หมายเลข']||'—'}</td>
-      <td><span class="badge ${baClass}">${ba}</span></td>
-      <td style="font-family:var(--mono);color:var(--cyan)">${r['Limit_Gap_Ring']||'—'}</td>
-      <td><span class="badge ${judgeClass}">${judge}</span></td>
-      <td style="font-size:11px;color:var(--text2)">${r['ผู้ตรวจวัด']||'—'}</td>
-    </tr>`;
+  tbody.innerHTML=[...filteredDash].reverse().map(r=>{
+    const dt=r['วันที่']?new Date(r['วันที่']).toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'}):'—';
+    const ba=r['Before or After']||'—';
+    const jd=r['สรุปผล']||'—';
+    const jcl=jd==='Acceptable'?'badge-ok':jd==='Not Acceptable'?'badge-ng':'badge-saved';
+    const bcl=ba==='Before'?'badge-before':ba==='After'?'badge-after':'';
+    const pdfUrl=r['ReportFile_Impeller']||'';
+    const pdfBtn=pdfUrl
+      ?'<a href="'+pdfUrl+'" target="_blank" style="color:var(--cyan);font-size:11px;text-decoration:none">เปิด PDF</a>'
+      :'<span style="color:var(--text3);font-size:11px">—</span>';
+    return '<tr>'+
+      '<td style="font-family:var(--mono);font-size:11px;color:var(--text2)">'+(r['เลขที่เอกสาร']||'—')+'</td>'+
+      '<td>'+dt+'</td>'+
+      '<td><span class="badge badge-saved">'+(r['สถานที่']||'—')+'</span></td>'+
+      '<td>'+(r['หมายเลข']||'—')+'</td>'+
+      '<td><span class="badge '+bcl+'">'+ba+'</span></td>'+
+      '<td style="font-family:var(--mono);color:var(--cyan)">'+(r['Limit_Gap_Ring']||'—')+'</td>'+
+      '<td><span class="badge '+jcl+'">'+jd+'</span></td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+(r['ผู้ตรวจวัด']||'—')+'</td>'+
+      '<td>'+pdfBtn+'</td>'+
+      '</tr>';
   }).join('');
 }
 
 // ── TOAST ──
 let toastTimer;
-function toast(msg, type = '') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `toast show ${type}`;
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+(type||'');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),3500);
 }
 </script>
 </body>
