@@ -477,13 +477,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="tbar-right">
         <input type="text" class="fsearch" id="d-search" placeholder="&#128269; ค้นหา..." oninput="filterDash()">
         <select class="fsel" id="d-st" onchange="filterDash()"><option value="">ทุกสถานี</option></select>
-        <div style="display:flex;align-items:center;gap:5px">
-          <span style="font-size:11px;color:var(--text3);font-weight:600;white-space:nowrap">ตั้งแต่</span>
-          <input type="date" class="fsel" id="d-from" onchange="filterDash()" style="padding:5px 8px;font-size:12px">
-          <span style="font-size:11px;color:var(--text3);font-weight:600">ถึง</span>
-          <input type="date" class="fsel" id="d-to" onchange="filterDash()" style="padding:5px 8px;font-size:12px">
-          <button class="btn-ref" onclick="clearDateRange()" style="padding:5px 8px;font-size:11px;white-space:nowrap">&#10005;</button>
-        </div>
         <select class="fsel" id="d-ba" onchange="filterDash()">
           <option value="">Before &amp; After</option>
           <option value="Before">Before</option>
@@ -495,6 +488,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <option value="Not Acceptable">Not Acceptable</option>
         </select>
       </div>
+    </div>
+    <!-- Date range row -->
+    <div style="padding:10px 16px;border-bottom:1px solid var(--bg4);display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg3)">
+      <span style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase">&#128197; ช่วงวันที่</span>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--text3)">ตั้งแต่</span>
+        <input type="date" class="fsel" id="d-from" onchange="filterDash()" style="padding:5px 10px;font-size:12px">
+        <span style="font-size:12px;color:var(--text3)">ถึง</span>
+        <input type="date" class="fsel" id="d-to" onchange="filterDash()" style="padding:5px 10px;font-size:12px">
+        <button class="btn-ref" onclick="clearDateRange()" style="padding:5px 10px;font-size:11px">&#10005; ล้างวันที่</button>
+      </div>
+      <span id="date-range-label" style="font-size:11px;color:var(--teal);font-weight:600;margin-left:4px"></span>
     </div>
     <div class="dtbl-wrap">
       <table class="dtbl">
@@ -1206,6 +1211,8 @@ function clearDateRange() {
   const t=document.getElementById('d-to');
   if(f) f.value='';
   if(t) t.value='';
+  const lbl=document.getElementById('date-range-label');
+  if(lbl) lbl.textContent='';
   filterDash();
 }
 
@@ -1218,6 +1225,18 @@ function filterDash() {
   const jd   = document.getElementById('d-jd').value;
   const fromTs = from ? new Date(from).setHours(0,0,0,0) : null;
   const toTs   = to   ? new Date(to).setHours(23,59,59,999) : null;
+
+  // อัพเดต label
+  const lbl=document.getElementById('date-range-label');
+  if(lbl){
+    if(from||to){
+      const fmt=d=>new Date(d).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
+      lbl.textContent = from&&to ? '📅 '+fmt(from)+' — '+fmt(to)
+        : from ? '📅 ตั้งแต่ '+fmt(from)
+        : '📅 ถึง '+fmt(to);
+    } else { lbl.textContent=''; }
+  }
+
   filteredRec = allRecords.filter(r=>{
     if(st && r['สถานที่']!==st) return false;
     if(ba && r['Before or After']!==ba) return false;
