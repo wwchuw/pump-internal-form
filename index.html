@@ -725,27 +725,36 @@ function validateForm() {
   return null;
 }
 
-// ── LOCK / UNLOCK FORM ──
+// ── IDs ของ input/select ที่ต้อง lock/unlock ──
+const FORM_FIELD_IDS = [
+  'f-station','f-pump','f-date','f-beforeafter','f-remark','f-approval',
+  'end_a_0','end_a_90','end_a_180','end_a_270',
+  'end_b_0','end_b_90','end_b_180','end_b_270',
+  'coupling_a_0','coupling_a_90','coupling_a_180','coupling_a_270',
+  'coupling_b_0','coupling_b_90','coupling_b_180','coupling_b_270',
+  'j-ok','j-ng'
+];
+
 function lockForm(docNo) {
   editMode=true; editDocNo=docNo;
   document.getElementById('docno-box').textContent=docNo;
-  // lock inputs
-  document.querySelectorAll('#page-form input:not([type=radio]):not(#f-inspector-name), #page-form select').forEach(el=>{
-    el.disabled=true;
+  FORM_FIELD_IDS.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.disabled=true;
   });
-  document.querySelectorAll('#page-form input[type=radio]').forEach(el=>el.disabled=true);
   document.getElementById('btn-save').disabled=true;
   document.getElementById('btn-save-pdf').disabled=false;
   document.getElementById('btn-edit').style.display='inline-flex';
 }
 
 function unlockForm() {
-  document.querySelectorAll('#page-form input:not(#f-inspector-name), #page-form select').forEach(el=>{
-    el.disabled=false;
+  FORM_FIELD_IDS.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.disabled=false;
   });
   document.getElementById('btn-save').disabled=false;
   document.getElementById('btn-save-pdf').disabled=false;
-  setFormStatus('✏️ โหมดแก้ไข — กดบันทึกเพื่อบันทึกทับข้อมูลเดิม','amber');
+  setFormStatus('&#9998; โหมดแก้ไข — กดบันทึกเพื่อบันทึกทับข้อมูลเดิม','amber');
 }
 
 // ── SAVE (ใหม่หรือบันทึกทับ) ──
@@ -898,10 +907,10 @@ async function selectSearchResult(docNo) {
 
 function fillForm(r) {
   // unlock ก่อน เพื่อให้ set ค่าได้
-  document.querySelectorAll('#page-form input:not(#f-inspector-name), #page-form select').forEach(el=>{
-    el.disabled=false;
+  FORM_FIELD_IDS.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.disabled=false;
   });
-  document.querySelectorAll('#page-form input[type=radio]').forEach(el=>el.disabled=false);
 
   editMode=true;
   editDocNo=String(r['เลขที่เอกสาร']||'');
@@ -969,9 +978,14 @@ function clearForm() {
   const ch=document.querySelector('input[name="judge"]:checked');
   if(ch) ch.checked=false;
   document.getElementById('docno-box').textContent='—';
-  document.getElementById('btn-edit').style.display='none';
+  // unlock all fields
+  FORM_FIELD_IDS.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.disabled=false;
+  });
   document.getElementById('btn-save').disabled=false;
   document.getElementById('btn-save-pdf').disabled=false;
+  document.getElementById('btn-edit').style.display='none';
   document.getElementById('form-status').innerHTML='';
   document.getElementById('search-status').textContent='';
   selectedEquip=null; approvalRef='';
@@ -1186,6 +1200,19 @@ function buildDashHead() {
     '</tr>';
 }
 
+function parseRecordDate(r) {
+  const v = r['วันที่'];
+  if (!v) return null;
+  // รองรับทั้ง "yyyy-MM-dd", Date object, และ string อื่นๆ
+  const s = String(v).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+    const d = new Date(s);
+    return isNaN(d) ? null : d;
+  }
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
 function filterDash() {
   const q  = (document.getElementById('d-search')?.value||'').toLowerCase();
   const st = document.getElementById('d-st').value;
@@ -1198,8 +1225,8 @@ function filterDash() {
     if(ba && r['Before or After']!==ba) return false;
     if(jd && r['สรุปผล']!==jd) return false;
     if(yr||mo){
-      const d=r['วันที่']?new Date(r['วันที่']):null;
-      if(!d||isNaN(d)) return false;
+      const d = parseRecordDate(r);
+      if(!d) return false;
       if(yr && String(d.getFullYear())!==String(yr)) return false;
       if(mo && String(d.getMonth()+1).padStart(2,'0')!==mo) return false;
     }
