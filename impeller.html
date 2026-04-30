@@ -498,9 +498,18 @@ const PAGE_SIZE = 20;
 // ── STATE ──
 let equipData=[], approvalData=[], allRecords=[];
 let filteredRec=[], sortCol='', sortDir=1, curPage=1;
-let currentUser=null; // {emId, name, sig}
+let currentUser=null;
 let editMode=false, editDocNo='';
 let selectedEquip=null, approvalRef='';
+
+const FORM_FIELD_IDS = [
+  'f-station','f-pump','f-date','f-beforeafter','f-remark','f-approval',
+  'end_a_0','end_a_90','end_a_180','end_a_270',
+  'end_b_0','end_b_90','end_b_180','end_b_270',
+  'coupling_a_0','coupling_a_90','coupling_a_180','coupling_a_270',
+  'coupling_b_0','coupling_b_90','coupling_b_180','coupling_b_270',
+  'j-ok','j-ng'
+];
 
 // ============================================================
 //  LOGIN / LOGOUT
@@ -684,16 +693,6 @@ function validateForm() {
   if(!document.getElementById('f-approval').value) return 'กรุณาเลือก ผู้อนุมัติ';
   return null;
 }
-
-// ── IDs ของ input/select ที่ต้อง lock/unlock ──
-const FORM_FIELD_IDS = [
-  'f-station','f-pump','f-date','f-beforeafter','f-remark','f-approval',
-  'end_a_0','end_a_90','end_a_180','end_a_270',
-  'end_b_0','end_b_90','end_b_180','end_b_270',
-  'coupling_a_0','coupling_a_90','coupling_a_180','coupling_a_270',
-  'coupling_b_0','coupling_b_90','coupling_b_180','coupling_b_270',
-  'j-ok','j-ng'
-];
 
 function lockForm(docNo) {
   editMode=true; editDocNo=docNo;
