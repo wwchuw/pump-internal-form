@@ -504,30 +504,6 @@ let selectedEquip=null, approvalRef='';
 
 // ============================================================
 //  LOGIN / LOGOUT
-// ============================================================
-async function doLogin() {
-  const emId = document.getElementById('l-emid').value.trim();
-  const pw   = document.getElementById('l-pw').value.trim();
-  if (!emId||!pw) { setLoginErr('กรุณากรอก EmID และ Password'); return; }
-  setLoginErr('');
-  const btn = document.querySelector('#login-screen .btn-primary');
-  btn.disabled=true; btn.textContent='กำลังตรวจสอบ...';
-  try {
-    const res = await apiPost({action:'login', emId, password:pw});
-    if (res.status==='ok') {
-      currentUser = res;
-      
-      document.getElementById('t-user-label').textContent = censorName(res.name);
-      document.getElementById('f-inspector-name').value = censorName(res.name);
-      init();
-    } else {
-      setLoginErr(res.message||'เข้าสู่ระบบไม่สำเร็จ');
-    }
-  } catch(e) { setLoginErr('เชื่อมต่อ Server ไม่สำเร็จ'); }
-  finally { btn.disabled=false; btn.textContent='เข้าสู่ระบบ'; }
-}
-function setLoginErr(m){ document.getElementById('login-err').textContent=m; }
-
 // ── SESSION ──
 function initSession() {
   const raw = sessionStorage.getItem('pm_user');
