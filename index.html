@@ -444,12 +444,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
     </div>
 
-    <!-- ปุ่มแยก -->
+    <!-- ปุ่ม -->
     <div class="btn-row">
-      <button class="btn btn-primary" id="btn-save" onclick="saveOnly()">&#128190; บันทึกข้อมูล</button>
+      <button class="btn btn-primary" id="btn-save"     onclick="saveOnly()">&#128190; บันทึกข้อมูล</button>
       <button class="btn btn-success" id="btn-save-pdf" onclick="saveAndPDF()">&#128196; บันทึก + สร้าง PDF</button>
-      <button class="btn btn-teal"    id="btn-pdf-only" onclick="pdfOnly()" disabled>&#128194; สร้าง PDF (ไม่บันทึก)</button>
-      <button class="btn btn-outline" id="btn-update" onclick="updateOnly()" style="display:none">&#9998; อัพเดตข้อมูล</button>
+      <button class="btn btn-outline" id="btn-edit"     onclick="unlockForm()" style="display:none">&#9998; แก้ไขข้อมูล</button>
     </div>
     <div id="form-status" style="margin-top:10px;font-size:12px;min-height:16px"></div>
   </div>
@@ -478,6 +477,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="tbar-right">
         <input type="text" class="fsearch" id="d-search" placeholder="&#128269; ค้นหา..." oninput="filterDash()">
         <select class="fsel" id="d-st" onchange="filterDash()"><option value="">ทุกสถานี</option></select>
+        <select class="fsel" id="d-year" onchange="filterDash()"><option value="">ทุกปี</option></select>
+        <select class="fsel" id="d-month" onchange="filterDash()">
+          <option value="">ทุกเดือน</option>
+          <option value="01">มกราคม</option><option value="02">กุมภาพันธ์</option>
+          <option value="03">มีนาคม</option><option value="04">เมษายน</option>
+          <option value="05">พฤษภาคม</option><option value="06">มิถุนายน</option>
+          <option value="07">กรกฎาคม</option><option value="08">สิงหาคม</option>
+          <option value="09">กันยายน</option><option value="10">ตุลาคม</option>
+          <option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+        </select>
         <select class="fsel" id="d-ba" onchange="filterDash()">
           <option value="">Before &amp; After</option>
           <option value="Before">Before</option>
@@ -507,7 +516,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 // ============================================================
 //  CONFIG
 // ============================================================
-const GAS_URL = 'https://script.google.com/macros/s/AKfycby33nNBpHI6QwbmlktJSbqBy84QptjibaqxtoZXsK85SwtGbeuNYcE9nWMXSJTSpZZRmw/exec';
+const GAS_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 const PAGE_SIZE = 20;
 
 // ── STATE ──
@@ -617,7 +626,6 @@ function onStationChange() {
   selectedEquip=null;
   document.getElementById('f-limit').value='';
   document.getElementById('f-footer').value='';
-  document.getElementById('btn-pdf-only').disabled=true;
   updateDocNo();
 }
 
@@ -630,7 +638,7 @@ function onPumpChange() {
     document.getElementById('f-footer').value=selectedEquip['Footer_Im_ring']||'';
     rechkAll();
   }
-  document.getElementById('btn-pdf-only').disabled=!selectedEquip;
+  document.getElementById('btn-edit').style.display='none';
   updateDocNo();
 }
 
@@ -717,41 +725,48 @@ function validateForm() {
   return null;
 }
 
-// ── SAVE ONLY ──
+// ── LOCK / UNLOCK FORM ──
+function lockForm(docNo) {
+  editMode=true; editDocNo=docNo;
+  document.getElementById('docno-box').textContent=docNo;
+  // lock inputs
+  document.querySelectorAll('#page-form input:not([type=radio]):not(#f-inspector-name), #page-form select').forEach(el=>{
+    el.disabled=true;
+  });
+  document.querySelectorAll('#page-form input[type=radio]').forEach(el=>el.disabled=true);
+  document.getElementById('btn-save').disabled=true;
+  document.getElementById('btn-save-pdf').disabled=false;
+  document.getElementById('btn-edit').style.display='inline-flex';
+}
+
+function unlockForm() {
+  document.querySelectorAll('#page-form input:not(#f-inspector-name), #page-form select').forEach(el=>{
+    el.disabled=false;
+  });
+  document.getElementById('btn-save').disabled=false;
+  document.getElementById('btn-save-pdf').disabled=false;
+  setFormStatus('✏️ โหมดแก้ไข — กดบันทึกเพื่อบันทึกทับข้อมูลเดิม','amber');
+}
+
+// ── SAVE (ใหม่หรือบันทึกทับ) ──
 async function saveOnly() {
   const err=validateForm(); if(err){toast(err,'e');return;}
-  if(!currentUser) return;
   setBtns(true,'กำลังบันทึก...');
   try {
     const fd=collectForm();
-    fd.action='save';
+    // ถ้าอยู่ใน edit mode → update; ถ้าใหม่ → save
+    if(editMode && editDocNo){
+      fd.action='update'; fd.docNo=editDocNo;
+    } else {
+      fd.action='save';
+    }
     const res=await apiPost(fd);
     if(res.status==='ok'){
-      toast('บันทึกสำเร็จ เลขที่: '+res.docNo,'s');
-      setFormStatus('✅ บันทึกแล้ว เลขที่: '+res.docNo,'green');
-      // เข้าสู่ edit mode สำหรับ record นี้
-      editMode=true; editDocNo=res.docNo;
-      document.getElementById('docno-box').textContent=res.docNo;
-      document.getElementById('btn-update').style.display='inline-flex';
-      document.getElementById('btn-pdf-only').disabled=false;
+      const docNo=editDocNo||res.docNo;
+      toast('บันทึกสำเร็จ เลขที่: '+docNo,'s');
+      setFormStatus('&#9989; บันทึกแล้ว เลขที่: '+docNo,'green');
+      lockForm(docNo);
     } else { toast(res.message||'บันทึกไม่สำเร็จ','e'); }
-  } catch(e){ toast('เชื่อมต่อ Server ไม่สำเร็จ','e'); }
-  finally { setBtns(false); }
-}
-
-// ── UPDATE ONLY ──
-async function updateOnly() {
-  if(!editMode||!editDocNo){toast('ไม่อยู่ในโหมดแก้ไข','e');return;}
-  const err=validateForm(); if(err){toast(err,'e');return;}
-  setBtns(true,'กำลังอัพเดต...');
-  try {
-    const fd=collectForm();
-    fd.action='update'; fd.docNo=editDocNo;
-    const res=await apiPost(fd);
-    if(res.status==='ok'){
-      toast('อัพเดตสำเร็จ','s');
-      setFormStatus('✅ อัพเดตแล้ว เลขที่: '+editDocNo,'green');
-    } else { toast(res.message||'อัพเดตไม่สำเร็จ','e'); }
   } catch(e){ toast('เชื่อมต่อ Server ไม่สำเร็จ','e'); }
   finally { setBtns(false); }
 }
@@ -769,63 +784,41 @@ async function saveAndPDF() {
       const res=await apiPost(fd);
       if(res.status!=='ok'){toast(res.message||'บันทึกไม่สำเร็จ','e');return;}
       docNo=res.docNo;
-      editMode=true; editDocNo=docNo;
-      document.getElementById('docno-box').textContent=docNo;
-      document.getElementById('btn-update').style.display='inline-flex';
+      lockForm(docNo);
       toast('บันทึกสำเร็จ เลขที่: '+docNo,'s');
+    } else {
+      // update ก่อน แล้วค่อย PDF
+      fd.action='update'; fd.docNo=docNo;
+      const res=await apiPost(fd);
+      if(res.status!=='ok'){toast(res.message||'อัพเดตไม่สำเร็จ','e');return;}
     }
-    // สร้าง PDF → อัพโหลด Drive
-    document.querySelector('#btn-save-pdf').textContent='กำลังสร้าง PDF...';
+    document.getElementById('btn-save-pdf').textContent='กำลังสร้าง PDF...';
     const pdfData=Object.assign({},fd,{docNo});
     const doc=await generatePDF(pdfData);
     const b64=doc.output('datauristring').split(',')[1];
-    document.querySelector('#btn-save-pdf').textContent='กำลังอัพโหลด Drive...';
+    document.getElementById('btn-save-pdf').textContent='กำลังอัพโหลด Drive...';
     const dr=await apiPost({action:'save_pdf',emId:currentUser.emId,
       password:document.getElementById('l-pw').value,docNo,pdfBase64:b64});
     if(dr.status==='ok'){
       toast('PDF อัพโหลด Drive สำเร็จ','s');
-      setFormStatus('✅ บันทึก + PDF แล้ว เลขที่: '+docNo+' — <a href="'+dr.fileUrl+'" target="_blank" style="color:var(--teal)">เปิด PDF</a>','green');
-      document.getElementById('btn-pdf-only').disabled=false;
+      setFormStatus('&#9989; บันทึก + PDF แล้ว เลขที่: '+docNo+' — <a href="'+dr.fileUrl+'" target="_blank" style="color:var(--teal)">เปิด PDF</a>','green');
     } else { toast('PDF Drive: '+dr.message,'e'); }
   } catch(e){ toast('เชื่อมต่อ Server ไม่สำเร็จ','e'); }
-  finally { setBtns(false,'บันทึก + สร้าง PDF'); }
-}
-
-// ── PDF ONLY (ไม่บันทึก) ──
-async function pdfOnly() {
-  if(!selectedEquip&&!editMode){toast('กรุณาเลือกเครื่องก่อน','e');return;}
-  if(!currentUser) return;
-  setBtns(true,'กำลังสร้าง PDF...');
-  try {
-    const fd=collectForm();
-    const docNo=editMode?editDocNo:(()=>{
-      const ds=fd.date.replace(/-/g,'').slice(2);
-      return ds+'_'+fd.station+'_'+fd.pump_no+'ImpXXX';
-    })();
-    fd.docNo=docNo;
-    const doc=await generatePDF(fd);
-    const b64=doc.output('datauristring').split(',')[1];
-    document.querySelector('#btn-pdf-only').textContent='กำลังอัพโหลด Drive...';
-    const dr=await apiPost({action:'save_pdf',emId:currentUser.emId,
-      password:document.getElementById('l-pw').value,docNo,pdfBase64:b64});
-    if(dr.status==='ok'){
-      toast('PDF อัพโหลด Drive สำเร็จ','s');
-      setFormStatus('📄 PDF พร้อม — <a href="'+dr.fileUrl+'" target="_blank" style="color:var(--teal)">เปิด PDF</a>','teal');
-    } else { toast('PDF Drive: '+dr.message,'e'); }
-  } catch(e){ toast('สร้าง PDF ไม่สำเร็จ','e'); }
-  finally { setBtns(false); }
+  finally {
+    document.getElementById('btn-save-pdf').textContent='บันทึก + สร้าง PDF';
+    document.getElementById('btn-save-pdf').disabled=false;
+    document.getElementById('btn-edit').style.display='inline-flex';
+  }
 }
 
 function setBtns(dis, label) {
-  ['btn-save','btn-save-pdf','btn-pdf-only','btn-update'].forEach(id=>{
+  ['btn-save','btn-save-pdf'].forEach(id=>{
     const b=document.getElementById(id);
-    if(b){ b.disabled=dis; if(label&&id==='btn-save-pdf') b.textContent=label; }
+    if(b){ b.disabled=dis; }
   });
   if(!dis){
     document.getElementById('btn-save').textContent='บันทึกข้อมูล';
     document.getElementById('btn-save-pdf').textContent='บันทึก + สร้าง PDF';
-    document.getElementById('btn-pdf-only').textContent='สร้าง PDF (ไม่บันทึก)';
-    document.getElementById('btn-update').textContent='อัพเดตข้อมูล';
   }
 }
 
@@ -912,8 +905,8 @@ function fillForm(r) {
     if(censorName(o.text)===censorName(aprName)||o.text===aprName) aprEl.value=o.value;
   });
 
-  document.getElementById('btn-update').style.display='inline-flex';
-  document.getElementById('btn-pdf-only').disabled=false;
+  document.getElementById('btn-edit').style.display='inline-flex';
+  lockForm(editDocNo);
   setTimeout(rechkAll,200);
 }
 
@@ -931,8 +924,9 @@ function clearForm() {
   const ch=document.querySelector('input[name="judge"]:checked');
   if(ch) ch.checked=false;
   document.getElementById('docno-box').textContent='—';
-  document.getElementById('btn-update').style.display='none';
-  document.getElementById('btn-pdf-only').disabled=true;
+  document.getElementById('btn-edit').style.display='none';
+  document.getElementById('btn-save').disabled=false;
+  document.getElementById('btn-save-pdf').disabled=false;
   document.getElementById('form-status').innerHTML='';
   document.getElementById('search-status').textContent='';
   selectedEquip=null; approvalRef='';
@@ -1101,6 +1095,16 @@ async function loadDashboard() {
     const res=await apiFetch('read');
     allRecords=res.data||[];
     filteredRec=[...allRecords];
+    // build year filter
+    const years=[...new Set(allRecords.map(r=>{
+      const d=String(r['วันที่']||'');
+      return d?new Date(d).getFullYear():'';
+    }))].filter(Boolean).sort((a,b)=>b-a);
+    const ysel=document.getElementById('d-year');
+    const ycur=ysel.value;
+    ysel.innerHTML='<option value="">ทุกปี</option>';
+    years.forEach(y=>ysel.innerHTML+='<option value="'+y+'"'+(String(y)===ycur?' selected':'')+'>'+y+'</option>');
+    // build station filter
     const stations=[...new Set(allRecords.map(r=>r['สถานที่']))].filter(Boolean).sort();
     const ssel=document.getElementById('d-st');
     const cur=ssel.value;
@@ -1140,12 +1144,20 @@ function buildDashHead() {
 function filterDash() {
   const q  = (document.getElementById('d-search')?.value||'').toLowerCase();
   const st = document.getElementById('d-st').value;
+  const yr = document.getElementById('d-year')?.value||'';
+  const mo = document.getElementById('d-month')?.value||'';
   const ba = document.getElementById('d-ba').value;
   const jd = document.getElementById('d-jd').value;
   filteredRec = allRecords.filter(r=>{
     if(st && r['สถานที่']!==st) return false;
     if(ba && r['Before or After']!==ba) return false;
     if(jd && r['สรุปผล']!==jd) return false;
+    if(yr||mo){
+      const d=r['วันที่']?new Date(r['วันที่']):null;
+      if(!d||isNaN(d)) return false;
+      if(yr && String(d.getFullYear())!==String(yr)) return false;
+      if(mo && String(d.getMonth()+1).padStart(2,'0')!==mo) return false;
+    }
     if(q){
       const hay=COLS.map(c=>String(r[c.k]||'')).join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
