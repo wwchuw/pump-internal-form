@@ -219,28 +219,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">&#128295;</div>
-    <div class="login-title">Packing Sleeve Record</div>
-    <div class="login-sub">Metropolitan Waterworks Authority</div>
-    <div class="login-fg">
-      <label>Username (EmID)</label>
-      <input class="login-input" type="text" id="l-emid" placeholder="101812"
-        onkeydown="if(event.key==='Enter')document.getElementById('l-pw').focus()">
-    </div>
-    <div class="login-fg">
-      <label>Password</label>
-      <input class="login-input" type="password" id="l-pw" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
-        onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div class="login-err" id="login-err"></div>
-    <button class="btn btn-success" style="width:100%;justify-content:center;padding:12px;font-size:14px;margin-top:4px" onclick="doLogin()">เข้าสู่ระบบ</button>
-    <a href="home.html" style="display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--text3)">&#8592; กลับหน้าหลัก</a>
-  </div>
-</div>
-
 <!-- TOPBAR -->
 <nav class="topbar">
   <div class="t-logo">
@@ -516,30 +494,20 @@ const COLS = [
   {k:'ReportFile_Packing',l:'PDF'},
 ];
 
-// ── LOGIN ──
-async function doLogin() {
-  const emId=document.getElementById('l-emid').value.trim();
-  const pw=document.getElementById('l-pw').value.trim();
-  if(!emId||!pw){setLoginErr('กรุณากรอก EmID และ Password');return;}
-  setLoginErr('');
-  const btn=document.querySelector('#login-screen .btn-success');
-  btn.disabled=true;btn.textContent='กำลังตรวจสอบ...';
-  try {
-    const res=await apiPost({action:'login',emId,password:pw});
-    if(res.status==='ok'){
-      currentUser=res;
-      document.getElementById('login-screen').style.display='none';
-      document.getElementById('t-user-label').textContent=censorName(res.name);
-      document.getElementById('f-inspector-name').value=censorName(res.name);
-      init();
-    } else { setLoginErr(res.message||'เข้าสู่ระบบไม่สำเร็จ'); }
-  } catch(e){setLoginErr('เชื่อมต่อ Server ไม่สำเร็จ');}
-  finally{btn.disabled=false;btn.textContent='เข้าสู่ระบบ';}
+// ── SESSION LOGIN ──
+function initSession() {
+  const raw = sessionStorage.getItem('pm_user');
+  if (!raw) { window.location.href = 'index.html'; return; }
+  currentUser = JSON.parse(raw);
+  document.getElementById('t-user-label').textContent = censorName(currentUser.name);
+  document.getElementById('f-inspector-name').value = censorName(currentUser.name);
+  init();
 }
-function setLoginErr(m){document.getElementById('login-err').textContent=m;}
-function doLogout(){currentUser=null;editMode=false;editDocNo='';
-  document.getElementById('l-emid').value='';document.getElementById('l-pw').value='';
-  document.getElementById('login-screen').style.display='flex';}
+
+function doLogout() {
+  sessionStorage.removeItem('pm_user');
+  window.location.href = 'index.html';
+}
 function censorName(name){
   if(!name)return'';
   const parts=String(name).trim().split(' ');
@@ -665,7 +633,7 @@ function unlockForm(){
 function collectForm(){
   return{
     emId:currentUser?.emId||'',
-    password:document.getElementById('l-pw').value||'',
+    password:currentUser?.password||'',
     sheet:SHEET_NAME,
     station:document.getElementById('f-station').value,
     pump_no:document.getElementById('f-pump').value,
@@ -741,7 +709,7 @@ async function saveAndPDF(){
     document.getElementById('btn-save-pdf').textContent='กำลังอัพโหลด Drive...';
     const b64=doc.output('datauristring').split(',')[1];
     const dr=await apiPost({action:'save_packing_pdf',emId:currentUser.emId,
-      password:document.getElementById('l-pw').value,docNo,pdfBase64:b64});
+      password:currentUser?.password||'',docNo,pdfBase64:b64});
     if(dr.status==='ok'){
       toast('PDF อัพโหลด Drive สำเร็จ','s');
       setFormStatus('&#9989; บันทึก + PDF แล้ว เลขที่: '+docNo+' — <a href="'+dr.fileUrl+'" target="_blank" style="color:var(--teal)">เปิด PDF</a>','green');
@@ -1028,6 +996,8 @@ function changePage(p){const pages=Math.ceil(filteredRec.length/PAGE_SIZE)||1;cu
 
 async function apiFetch(action){const res=await fetch(GAS_URL+'?action='+action+'&_='+Date.now());return await res.json();}
 async function apiPost(payload){const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});return await res.json();}
+
+initSession();
 
 let _tt;
 function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(type||'');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3500);}
