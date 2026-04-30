@@ -256,7 +256,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <button class="nav-tab"        id="tab-dashboard" onclick="goPage('dashboard',this)">&#128202; Dashboard</button>
   </div>
   <div class="t-right">
-    <a href="home.html" style="font-size:12px;color:var(--blue);background:var(--blue3);border:1px solid var(--blue4);border-radius:100px;padding:4px 12px;text-decoration:none;font-weight:600">&#8962; หน้าหลัก</a><div class="t-user" id="t-user-label">—</div>
+    <a href="index.html" style="font-size:12px;color:var(--blue);background:var(--blue3);border:1px solid var(--blue4);border-radius:100px;padding:4px 12px;text-decoration:none;font-weight:600">&#8962; หน้าหลัก</a><div class="t-user" id="t-user-label">—</div>
     <div class="t-logout" onclick="doLogout()">ออกจากระบบ</div>
   </div>
 </nav>
@@ -528,11 +528,19 @@ async function doLogin() {
 }
 function setLoginErr(m){ document.getElementById('login-err').textContent=m; }
 
+// ── SESSION ──
+function initSession() {
+  const raw = sessionStorage.getItem('pm_user');
+  if (!raw) { window.location.href = 'index.html'; return; }
+  currentUser = JSON.parse(raw);
+  document.getElementById('t-user-label').textContent = censorName(currentUser.name);
+  document.getElementById('f-inspector-name').value = censorName(currentUser.name);
+  init();
+}
+
 function doLogout() {
-  currentUser=null; editMode=false; editDocNo='';
-  document.getElementById('l-emid').value='';
-  document.getElementById('l-pw').value='';
-  document.getElementById('login-screen').style.display='flex';
+  sessionStorage.removeItem('pm_user');
+  window.location.href = 'index.html';
 }
 
 // ── เซ็นเซอร์ชื่อ: นายวัฒนาธร อ. → นายวัฒนาธร อ*** ──
