@@ -3,1369 +3,218 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Impeller & Liner Ring — MWA</title>
+<title>PM Record System — MWA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
-  --bg:#f5f4f0;--bg2:#fff;--bg3:#eeecea;--bg4:#e4e2de;
-  --border:#d0cec8;--border2:#b8b5ae;
+  --bg:#f5f4f0;--bg3:#eeecea;--bg4:#e4e2de;
+  --border:#d0cec8;
   --blue:#185fa5;--blue2:#0c447c;--blue3:#e6f1fb;--blue4:#b5d4f4;
-  --green:#3b6d11;--green2:#eaf3de;--green3:#c0dd97;
-  --red:#a32d2d;--red2:#fcebeb;--red3:#f7c1c1;
-  --amber:#854f0b;--amber2:#faeeda;--amber3:#fac775;
   --teal:#0f6e56;--teal2:#e1f5ee;--teal3:#9fe1cb;
-  --text:#1e1c18;--text2:#5a574f;--text3:#8a867d;--text4:#aaa89f;
+  --red:#a32d2d;--red2:#fcebeb;--red3:#f7c1c1;
+  --text:#1e1c18;--text2:#5a574f;--text3:#8a867d;
   --font:'IBM Plex Sans Thai',sans-serif;
   --mono:'IBM Plex Mono',monospace;
-  --radius:10px;
-  --shadow:0 1px 3px rgba(0,0,0,0.07),0 4px 12px rgba(0,0,0,0.04);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;z-index:999;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;padding:24px}
+.login-box{background:#fff;border:1.5px solid var(--border);border-radius:16px;
+  padding:44px 40px;width:min(400px,100%);text-align:center;
+  box-shadow:0 4px 24px rgba(0,0,0,0.08)}
+.login-logo{width:60px;height:60px;background:var(--blue);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  margin:0 auto 16px;box-shadow:0 4px 16px rgba(24,95,165,0.25)}
+.login-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:32px;line-height:1.6}
+.l-fg{text-align:left;margin-bottom:16px}
+.l-fg label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;
+  text-transform:uppercase;display:block;margin-bottom:6px}
+.l-fg input{width:100%;background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:9px;padding:12px 14px;color:var(--text);
+  font-family:var(--font);font-size:14px;outline:none;transition:all .15s}
+.l-fg input:focus{border-color:var(--blue);background:#fff;
+  box-shadow:0 0 0 3px rgba(24,95,165,0.1)}
+.login-err{font-size:12px;color:var(--red);margin-bottom:14px;
+  background:var(--red2);border-radius:8px;padding:8px 12px;display:none}
+.login-err.show{display:block}
+.btn-login{width:100%;padding:13px;background:var(--blue);border:none;
+  border-radius:9px;color:#fff;font-family:var(--font);font-size:15px;
+  font-weight:700;cursor:pointer;transition:all .2s;
+  box-shadow:0 2px 10px rgba(24,95,165,0.25)}
+.btn-login:hover{background:var(--blue2);transform:translateY(-1px)}
+.btn-login:disabled{opacity:.5;cursor:not-allowed;transform:none}
 
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1.5px solid var(--border);
-  padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:54px;
+.topbar{background:#fff;border-bottom:1.5px solid var(--border);padding:0 24px;
+  display:none;align-items:center;justify-content:space-between;height:54px;
   box-shadow:0 1px 6px rgba(0,0,0,0.06)}
 .t-logo{display:flex;align-items:center;gap:10px}
 .t-icon{width:32px;height:32px;background:var(--blue);border-radius:7px;
   display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
-.t-title{font-size:14px;font-weight:700;color:var(--text)}
+.t-title{font-size:14px;font-weight:700}
 .t-sub{font-size:10px;color:var(--text3);font-family:var(--mono)}
 .t-right{display:flex;align-items:center;gap:8px}
-.t-user{font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);
-  border-radius:100px;padding:4px 12px;font-weight:500}
-.t-logout{font-size:12px;color:var(--red);background:var(--red2);border:1px solid var(--red3);
-  border-radius:100px;padding:4px 10px;cursor:pointer;font-weight:600;transition:all .15s}
+.t-user{font-size:12px;color:var(--text2);background:var(--bg3);
+  border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-weight:500}
+.t-logout{font-size:12px;color:var(--red);background:var(--red2);
+  border:1px solid var(--red3);border-radius:100px;padding:4px 10px;
+  cursor:pointer;font-weight:600;transition:all .15s}
 .t-logout:hover{background:var(--red3)}
-.nav-tabs{display:flex;gap:2px}
-.nav-tab{padding:6px 14px;border-radius:7px;border:1px solid transparent;
-  background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;
-  font-weight:500;cursor:pointer;transition:all .15s}
-.nav-tab:hover{background:var(--bg3);color:var(--text)}
-.nav-tab.active{background:var(--blue3);border-color:var(--blue4);color:var(--blue2);font-weight:600}
 
-/* PAGES */
-.page{display:none;position:relative;z-index:1}
-.page.active{display:block;animation:fadeIn .2s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.wrap{max-width:960px;margin:0 auto;padding:24px 20px 80px}
+/* HOME */
+#home-screen{display:none}
+.wrap{max-width:680px;margin:0 auto;padding:60px 20px 80px;text-align:center}
+.home-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.home-sub{font-size:13px;color:var(--text3);margin-bottom:40px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.form-card{background:#fff;border:1.5px solid var(--border);border-radius:16px;
+  padding:28px 24px;text-decoration:none;color:inherit;display:block;
+  box-shadow:0 1px 3px rgba(0,0,0,0.07);position:relative;overflow:hidden;
+  text-align:left;transition:all .2s}
+.form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:var(--card-color,var(--blue))}
+.form-card:hover{border-color:var(--card-color,var(--blue));
+  transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.1)}
+.card-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.card-desc{font-size:12px;color:var(--text3);line-height:1.6}
+.card-tag{display:inline-block;margin-top:12px;font-size:10px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;padding:3px 10px;border-radius:100px;
+  background:var(--tag-bg);color:var(--tag-color);border:1px solid var(--tag-border)}
+.home-footer{margin-top:40px;font-size:11px;color:var(--text3);font-family:var(--mono)}
 
-/* LOGIN */
-
-
-/* FORM CARD */
-.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);
-  padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
-.card-hd{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.07em;
-  text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;
-  padding-bottom:10px;border-bottom:1px solid var(--bg4)}
-.card-hd::before{content:'';width:3px;height:14px;background:var(--blue);border-radius:2px;flex-shrink:0}
-
-/* GRID */
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase}
-.fg input,.fg select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
-  padding:9px 11px;color:var(--text);font-family:var(--font);font-size:13px;
-  outline:none;transition:all .15s;width:100%}
-.fg input:focus,.fg select:focus{border-color:var(--blue);background:#fff;
-  box-shadow:0 0 0 3px rgba(24,95,165,0.1)}
-.fg input[readonly]{color:var(--text2);cursor:default}
-.fg select option{background:#fff}
-.fg input[type=number]{font-family:var(--mono)}
-.req::after{content:' *';color:var(--red)}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-
-/* DOCNO */
-.docno{background:var(--teal2);border:1px solid var(--teal3);border-radius:8px;
-  padding:9px 12px;font-family:var(--mono);font-size:12px;color:var(--teal);
-  font-weight:600;letter-spacing:.04em;min-height:38px;display:flex;align-items:center}
-
-/* CLEARANCE TABLE */
-.cl-wrap{overflow-x:auto;margin:6px 0}
-.cl-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:460px}
-.cl-tbl th{background:var(--blue3);border:1px solid var(--blue4);padding:7px 10px;
-  text-align:center;font-weight:700;color:var(--blue2);font-family:var(--mono);font-size:11px}
-.cl-tbl td{border:1px solid var(--border);padding:3px 5px;text-align:center;background:#fff}
-.cl-tbl .sl{background:var(--bg3);color:var(--text2);font-weight:600;font-size:11px}
-.cl-tbl .al{background:var(--bg4);color:var(--text3);font-size:11px;font-family:var(--mono)}
-.ci{border:1px solid var(--border)!important;border-radius:6px!important;padding:5px 3px!important;
-  background:var(--bg3)!important;font-family:var(--mono)!important;font-size:12px!important;
-  text-align:center;width:56px;color:var(--text);outline:none;transition:border-color .15s}
-.ci:focus{border-color:var(--blue)!important;background:#fff!important}
-.ci.over{border-color:var(--red)!important;background:var(--red2)!important;
-  color:var(--red);font-weight:700}
-
-/* JUDGEMENT */
-.jw{display:flex;gap:10px;flex-wrap:wrap}
-.jo input{display:none}
-.jo label{display:flex;align-items:center;gap:7px;padding:9px 18px;
-  border:1.5px solid var(--border);border-radius:9px;cursor:pointer;
-  font-size:13px;font-weight:500;background:var(--bg3);color:var(--text2);transition:all .15s}
-.jo input:checked+label.ok{border-color:var(--green3);background:var(--green2);
-  color:var(--green);font-weight:700}
-.jo input:checked+label.ng{border-color:var(--red3);background:var(--red2);
-  color:var(--red);font-weight:700}
-
-/* BUTTONS */
-.btn{padding:10px 20px;border-radius:9px;font-family:var(--font);font-size:13px;
-  font-weight:600;cursor:pointer;transition:all .15s;border:none;display:inline-flex;
-  align-items:center;gap:6px}
-.btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(24,95,165,0.2)}
-.btn-primary:hover{background:var(--blue2);transform:translateY(-1px)}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-success{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(59,109,17,0.2)}
-.btn-success:hover{background:#2d530c;transform:translateY(-1px)}
-.btn-success:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--text2)}
-.btn-outline:hover{background:var(--bg3);color:var(--text)}
-.btn-teal{background:var(--teal);color:#fff}
-.btn-teal:hover{background:#0a5440;transform:translateY(-1px)}
-.btn-teal:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.btn-full{width:100%;justify-content:center;padding:12px 20px;font-size:14px}
-
-/* SEARCH BOX */
-.search-card{background:var(--blue3);border:1px solid var(--blue4);border-radius:var(--radius);
-  padding:16px 20px;margin-bottom:14px}
-.search-hd{font-size:11px;font-weight:700;color:var(--blue2);letter-spacing:.07em;
-  text-transform:uppercase;margin-bottom:12px}
-.search-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
-.search-row .fg{flex:1;min-width:140px}
-.search-sep{font-size:12px;color:var(--text3);padding-bottom:10px}
-
-/* STATUS BADGE */
-.badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:10px;
-  font-weight:700;font-family:var(--mono)}
-.b-ok{background:var(--green2);color:var(--green);border:1px solid var(--green3)}
-.b-ng{background:var(--red2);color:var(--red);border:1px solid var(--red3)}
-.b-bef{background:var(--amber2);color:var(--amber);border:1px solid var(--amber3)}
-.b-aft{background:var(--teal2);color:var(--teal);border:1px solid var(--teal3)}
-.b-st{background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
-  background:#1e1c18;border-radius:100px;padding:11px 24px;font-size:13px;
-  font-weight:600;color:#fff;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);
-  pointer-events:none;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,0.2)}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.s{background:var(--green)}
-.toast.e{background:var(--red)}
-.toast.i{background:var(--blue)}
-
-/* MODAL */
-.modal-bg{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.35);
-  display:none;align-items:center;justify-content:center;padding:16px}
-.modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:14px;padding:24px;width:min(480px,100%);
-  box-shadow:0 12px 40px rgba(0,0,0,0.15)}
-.modal-hd{font-size:16px;font-weight:700;margin-bottom:6px}
-.modal-sub{font-size:12px;color:var(--text3);margin-bottom:18px}
-.modal-row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
-
-/* DASHBOARD */
-.dash-hd{display:flex;align-items:center;justify-content:space-between;
-  padding-top:20px;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.dash-title{font-size:18px;font-weight:700}
-.dash-sub{font-size:12px;color:var(--text3);margin-top:2px}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);
-  display:inline-block;animation:pulse 1.4s infinite;vertical-align:middle;margin-right:6px}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,109,17,.4)}50%{box-shadow:0 0 0 5px rgba(59,109,17,0)}}
-
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:16px}
-.kpi-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;
-  border-top:3px solid;box-shadow:var(--shadow)}
-.kpi-n{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1}
-.kpi-l{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
-
-/* TABLE CARD */
-.tcard{background:#fff;border:1px solid var(--border);border-radius:12px;
-  overflow:hidden;box-shadow:var(--shadow)}
-.tbar{padding:12px 16px;border-bottom:1px solid var(--bg4);
-  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.tbar-title{font-size:13px;font-weight:600;color:var(--text2)}
-.tbar-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-.fsearch{background:var(--bg3);border:1px solid var(--border);border-radius:7px;
-  padding:6px 11px;color:var(--text);font-family:var(--font);font-size:12px;
-  outline:none;width:180px;transition:border-color .15s}
-.fsearch:focus{border-color:var(--blue);background:#fff}
-.fsel{background:var(--bg3);border:1px solid var(--border);border-radius:7px;
-  padding:6px 11px;color:var(--text);font-family:var(--font);font-size:12px;outline:none}
-.fsel option{background:#fff}
-.btn-ref{background:var(--blue3);border:1px solid var(--blue4);border-radius:7px;
-  padding:6px 13px;color:var(--blue2);font-family:var(--font);font-size:12px;
-  font-weight:600;cursor:pointer;transition:all .15s}
-.btn-ref:hover{background:#d0e6f8}
-
-/* DATA TABLE */
-.dtbl-wrap{overflow-x:auto}
-.dtbl{width:100%;border-collapse:collapse;font-size:11px}
-.dtbl th{background:var(--bg3);border-bottom:1.5px solid var(--border);
-  padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);
-  letter-spacing:.07em;text-transform:uppercase;font-family:var(--mono);
-  white-space:nowrap;cursor:pointer;user-select:none;transition:background .15s}
-.dtbl th:hover{background:var(--bg4)}
-.dtbl th.sort-asc::after{content:' ↑';color:var(--blue)}
-.dtbl th.sort-desc::after{content:' ↓';color:var(--blue)}
-.dtbl td{padding:8px 10px;border-bottom:1px solid var(--bg4);color:var(--text);
-  white-space:nowrap}
-.dtbl tr:last-child td{border-bottom:none}
-.dtbl tr:hover td{background:var(--bg3)}
-.dtbl td.num{font-family:var(--mono);text-align:right}
-.dtbl td.over-val{color:var(--red);font-weight:700}
-
-/* PAGINATION */
-.pgn{display:flex;align-items:center;justify-content:space-between;
-  padding:10px 16px;border-top:1px solid var(--bg4);font-size:12px;color:var(--text3);
-  flex-wrap:wrap;gap:8px}
-.pgn-btns{display:flex;gap:4px}
-.pgn-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
-  background:#fff;color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s}
-.pgn-btn:hover{background:var(--bg3)}
-.pgn-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
-.pgn-btn:disabled{opacity:.4;cursor:not-allowed}
-
-.empty{text-align:center;padding:40px;color:var(--text3);font-size:13px}
-
-@media(max-width:640px){
-  .g3,.g2{grid-template-columns:1fr}
-  .topbar{padding:0 12px}
-  .wrap{padding:16px 12px 60px}
-  .kpi-grid{grid-template-columns:1fr 1fr}
-  .search-row{flex-direction:column}
+@media(max-width:520px){
+  .form-grid{grid-template-columns:1fr}
+  .login-box{padding:36px 24px}
+  .wrap{padding:40px 16px 60px}
 }
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">&#9881;</div>
+    <div class="login-title">PM Record System</div>
+    <div class="login-sub">Metropolitan Waterworks Authority<br>กรุณาเข้าสู่ระบบก่อนใช้งาน</div>
+    <div class="l-fg">
+      <label>Username (EmID)</label>
+      <input type="text" id="l-emid" placeholder="101812" autocomplete="username"
+        onkeydown="if(event.key==='Enter')document.getElementById('l-pw').focus()">
+    </div>
+    <div class="l-fg">
+      <label>Password</label>
+      <input type="password" id="l-pw" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <button class="btn-login" id="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+  </div>
+</div>
+
 <!-- TOPBAR -->
-<nav class="topbar">
+<nav class="topbar" id="topbar">
   <div class="t-logo">
-    <div class="t-icon">&#128295;</div>
+    <div class="t-icon">&#9881;</div>
     <div>
-      <div class="t-title">Impeller &amp; Liner Ring</div>
-      <div class="t-sub">MWA — PM Record System</div>
+      <div class="t-title">PM Record System</div>
+      <div class="t-sub">MWA — Pump Internal Database</div>
     </div>
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" id="tab-form"      onclick="goPage('form',this)">&#128203; กรอกฟอร์ม</button>
-    <button class="nav-tab"        id="tab-dashboard" onclick="goPage('dashboard',this)">&#128202; Dashboard</button>
-  </div>
   <div class="t-right">
-    <a href="index.html" style="font-size:12px;color:var(--blue);background:var(--blue3);border:1px solid var(--blue4);border-radius:100px;padding:4px 12px;text-decoration:none;font-weight:600">&#8962; หน้าหลัก</a><div class="t-user" id="t-user-label">—</div>
+    <div class="t-user" id="t-user">—</div>
     <div class="t-logout" onclick="doLogout()">ออกจากระบบ</div>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════
-     FORM PAGE
-══════════════════════════════════ -->
-<div class="page active" id="page-form">
-<div class="wrap">
-
-  <!-- ค้นหา / แก้ไข -->
-  <div class="search-card">
-    <div class="search-hd">&#128269; ค้นหาเพื่อแก้ไขข้อมูลเดิม</div>
-    <div class="search-row">
-      <div class="fg">
-        <label>เลขที่เอกสาร</label>
-        <input type="text" id="s-docno" placeholder="260428_DPS1_1Imp001" style="background:#fff;border:1px solid var(--blue4)">
-      </div>
-      <div class="search-sep">หรือ</div>
-      <div class="fg">
-        <label>สถานที่</label>
-        <select id="s-station" style="background:#fff;border:1px solid var(--blue4)">
-          <option value="">— เลือก —</option>
-        </select>
-      </div>
-      <div class="fg">
-        <label>หมายเลข</label>
-        <select id="s-pump" style="background:#fff;border:1px solid var(--blue4)">
-          <option value="">— เลือก —</option>
-        </select>
-      </div>
-      <button class="btn btn-outline" onclick="searchRecord()" style="flex-shrink:0;margin-bottom:1px">&#128269; ค้นหา</button>
-      <button class="btn btn-outline" onclick="clearForm()" style="flex-shrink:0;margin-bottom:1px">&#10005; ล้างฟอร์ม</button>
+<!-- HOME -->
+<div id="home-screen">
+  <div class="wrap">
+    <div class="home-title">เลือกแบบฟอร์ม</div>
+    <div class="home-sub">Metropolitan Waterworks Authority</div>
+    <div class="form-grid">
+      <a class="form-card" href="impeller.html"
+        style="--card-color:#185fa5;--tag-bg:#e6f1fb;--tag-color:#0c447c;--tag-border:#b5d4f4">
+        <div class="card-title">Impeller &amp; Liner Ring</div>
+        <div class="card-desc">วัด Clearance ระหว่าง Impeller และ Liner Ring ของปั๊มน้ำ ทั้ง End side และ Coupling side</div>
+        <span class="card-tag">Clearance Measurement</span>
+      </a>
+      <a class="form-card" href="packing.html"
+        style="--card-color:#0f6e56;--tag-bg:#e1f5ee;--tag-color:#0f6e56;--tag-border:#9fe1cb">
+        <div class="card-title">Packing Sleeve Record</div>
+        <div class="card-desc">บันทึกค่า Distance และ Depth ของ Packing Sleeve ตำแหน่ง O-A ถึง O-F และ A-F</div>
+        <span class="card-tag">Packing Sleeve</span>
+      </a>
+      <a class="form-card" href="bearing.html"
+        style="--card-color:#5b21b6;--tag-bg:#ede9fe;--tag-color:#5b21b6;--tag-border:#c4b5fd">
+        <div class="card-title">Shaft &amp; Sleeve Bearing</div>
+        <div class="card-desc">วัด Clearance ระหว่าง Shaft และ Sleeve Bearing ทั้ง Coupling side และ End side พร้อมคำนวณค่า Average อัตโนมัติ</div>
+        <span class="card-tag">Shaft Bearing</span>
+      </a>
     </div>
-    <!-- Date range filter -->
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--blue4)">
-      <span style="font-size:11px;font-weight:700;color:var(--blue2);letter-spacing:.05em;text-transform:uppercase">&#128197; ช่วงวันที่</span>
-      <span style="font-size:12px;color:var(--text3)">ตั้งแต่</span>
-      <input type="date" id="s-from" style="background:#fff;border:1px solid var(--blue4);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--text);outline:none">
-      <span style="font-size:12px;color:var(--text3)">ถึง</span>
-      <input type="date" id="s-to" style="background:#fff;border:1px solid var(--blue4);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--text);outline:none">
-      <button class="btn btn-outline" onclick="clearSearchDate()" style="padding:6px 10px;font-size:11px">&#10005; ล้างวันที่</button>
-      <span id="s-date-label" style="font-size:11px;color:var(--teal);font-weight:600"></span>
-    </div>
-    <div id="search-status" style="margin-top:8px;font-size:12px;min-height:16px"></div>
-  </div>
-
-  <!-- ข้อมูลทั่วไป -->
-  <div class="card">
-    <div class="card-hd">ข้อมูลทั่วไป</div>
-    <div class="g3" style="margin-bottom:12px">
-      <div class="fg">
-        <label class="req">สถานที่</label>
-        <select id="f-station" onchange="onStationChange()"><option value="">— เลือก —</option></select>
-      </div>
-      <div class="fg">
-        <label class="req">หมายเลขเครื่อง</label>
-        <select id="f-pump" onchange="onPumpChange()"><option value="">— เลือก —</option></select>
-      </div>
-      <div class="fg">
-        <label class="req">วันที่ตรวจ</label>
-        <input type="date" id="f-date" oninput="updateDocNo()">
-      </div>
-    </div>
-    <div class="g2" style="margin-bottom:12px">
-      <div class="fg">
-        <label>Permissible Limit (mm)</label>
-        <input type="text" id="f-limit" readonly style="color:var(--teal);font-family:var(--mono);font-weight:700">
-      </div>
-      <div class="fg">
-        <label>Before / After</label>
-        <select id="f-beforeafter">
-          <option value="Before">Before</option>
-          <option value="After">After</option>
-        </select>
-      </div>
-    </div>
-    <div class="g2">
-      <div class="fg">
-        <label>เลขที่เอกสาร</label>
-        <div class="docno" id="docno-box">—</div>
-      </div>
-      <div class="fg">
-        <label>เอกสารอ้างอิง</label>
-        <input type="text" id="f-footer" readonly style="color:var(--text3);font-size:11px;font-family:var(--mono)">
-      </div>
-    </div>
-  </div>
-
-  <!-- Clearance Data -->
-  <div class="card">
-    <div class="card-hd">Clearance Data (Motor side view)</div>
-    <div class="cl-wrap">
-      <table class="cl-tbl">
-        <thead>
-          <tr>
-            <th colspan="2">Position</th>
-            <th>0&deg;</th><th>90&deg;</th><th>180&deg;</th><th>270&deg;</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="sl" rowspan="2">End side</td>
-            <td class="al">a</td>
-            <td><input class="ci" type="number" step="0.01" id="end_a_0"   oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="end_a_90"  oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="end_a_180" oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="end_a_270" oninput="chk(this)"></td>
-          </tr>
-          <tr>
-            <td class="al">b</td>
-            <td><input class="ci" type="number" step="0.01" id="end_b_0"   oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="end_b_90"  oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="end_b_180" oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="end_b_270" oninput="chk(this)"></td>
-          </tr>
-          <tr>
-            <td class="sl" rowspan="2">Coupling side</td>
-            <td class="al">a</td>
-            <td><input class="ci" type="number" step="0.01" id="coupling_a_0"   oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="coupling_a_90"  oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="coupling_a_180" oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="coupling_a_270" oninput="chk(this)"></td>
-          </tr>
-          <tr>
-            <td class="al">b</td>
-            <td><input class="ci" type="number" step="0.01" id="coupling_b_0"   oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="coupling_b_90"  oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="coupling_b_180" oninput="chk(this)"></td>
-            <td><input class="ci" type="number" step="0.01" id="coupling_b_270" oninput="chk(this)"></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="margin-top:7px;font-size:11px;color:var(--text3)">&#9888; ค่าที่เกิน Limit แสดงสีแดงอัตโนมัติ</div>
-  </div>
-
-  <!-- สรุปผล -->
-  <div class="card">
-    <div class="card-hd">สรุปผล และ ผู้รับผิดชอบ</div>
-    <div class="fg" style="margin-bottom:14px">
-      <label class="req">Judgement</label>
-      <div class="jw">
-        <div class="jo"><input type="radio" name="judge" id="j-ok" value="Acceptable">  <label class="ok" for="j-ok">&#10003; Acceptable</label></div>
-        <div class="jo"><input type="radio" name="judge" id="j-ng" value="Not Acceptable"><label class="ng" for="j-ng">&#10007; Not Acceptable</label></div>
-      </div>
-    </div>
-    <div class="g2" style="margin-bottom:12px">
-      <div class="fg"><label>หมายเหตุ</label><input type="text" id="f-remark" placeholder="(ถ้ามี)"></div>
-    </div>
-    <div class="g2" style="margin-bottom:4px">
-      <div class="fg">
-        <label>ผู้ตรวจวัด (Inspector)</label>
-        <input type="text" id="f-inspector-name" readonly style="color:var(--text2);background:var(--bg3)">
-      </div>
-      <div class="fg">
-        <label class="req">ผู้อนุมัติ (Approved by)</label>
-        <select id="f-approval" onchange="onApprovalChange()"><option value="">— เลือก —</option></select>
-      </div>
-    </div>
-
-    <!-- ปุ่ม -->
-    <div class="btn-row">
-      <button class="btn btn-primary" id="btn-save"     onclick="saveOnly()">&#128190; บันทึกข้อมูล</button>
-      <button class="btn btn-success" id="btn-save-pdf" onclick="saveAndPDF()">&#128196; บันทึก + สร้าง PDF</button>
-      <button class="btn btn-outline" id="btn-edit"     onclick="unlockForm()" style="display:none">&#9998; แก้ไขข้อมูล</button>
-    </div>
-    <div id="form-status" style="margin-top:10px;font-size:12px;min-height:16px"></div>
-  </div>
-
-</div>
-</div>
-
-<!-- ══════════════════════════════════
-     DASHBOARD PAGE
-══════════════════════════════════ -->
-<div class="page" id="page-dashboard">
-<div class="wrap">
-  <div class="dash-hd">
-    <div>
-      <div class="dash-title"><span class="live-dot"></span>Impeller Dashboard</div>
-      <div class="dash-sub">ข้อมูล real-time จาก Google Sheets</div>
-    </div>
-    <button class="btn-ref" onclick="loadDashboard()">&#8635; รีเฟรช</button>
-  </div>
-
-  <div class="kpi-grid" id="kpi-grid"></div>
-
-  <div class="tcard">
-    <div class="tbar">
-      <div class="tbar-title">ประวัติการบันทึก</div>
-      <div class="tbar-right">
-        <input type="text" class="fsearch" id="d-search" placeholder="&#128269; ค้นหา..." oninput="filterDash()">
-        <select class="fsel" id="d-st" onchange="filterDash()"><option value="">ทุกสถานี</option></select>
-        <select class="fsel" id="d-ba" onchange="filterDash()">
-          <option value="">Before &amp; After</option>
-          <option value="Before">Before</option>
-          <option value="After">After</option>
-        </select>
-        <select class="fsel" id="d-jd" onchange="filterDash()">
-          <option value="">ทุก Judgement</option>
-          <option value="Acceptable">Acceptable</option>
-          <option value="Not Acceptable">Not Acceptable</option>
-        </select>
-      </div>
-    </div>
-    <!-- Date range row -->
-    <div style="padding:10px 16px;border-bottom:1px solid var(--bg4);display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg3)">
-      <span style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase">&#128197; ช่วงวันที่</span>
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="font-size:12px;color:var(--text3)">ตั้งแต่</span>
-        <input type="date" class="fsel" id="d-from" onchange="filterDash()" style="padding:5px 10px;font-size:12px">
-        <span style="font-size:12px;color:var(--text3)">ถึง</span>
-        <input type="date" class="fsel" id="d-to" onchange="filterDash()" style="padding:5px 10px;font-size:12px">
-        <button class="btn-ref" onclick="clearDateRange()" style="padding:5px 10px;font-size:11px">&#10005; ล้างวันที่</button>
-      </div>
-      <span id="date-range-label" style="font-size:11px;color:var(--teal);font-weight:600;margin-left:4px"></span>
-    </div>
-    <div class="dtbl-wrap">
-      <table class="dtbl">
-        <thead id="dtbl-head"></thead>
-        <tbody id="dtbl-body"></tbody>
-      </table>
-    </div>
-    <div class="pgn" id="pgn"></div>
+    <div class="home-footer">PM Record System &nbsp;·&nbsp; Pump Internal Database</div>
   </div>
 </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-//  CONFIG
-// ============================================================
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKUrbCUyk785JyaZKmcszjHAeeQVkcM9Pj0aCu1fgi73C90kOHaSQ8jvDUIn3ZeDGX5w/exec';
-const PAGE_SIZE = 20;
 
-// ── STATE ──
-let equipData=[], approvalData=[], allRecords=[];
-let filteredRec=[], sortCol='', sortDir=1, curPage=1;
-let currentUser=null;
-let editMode=false, editDocNo='';
-let selectedEquip=null, approvalRef='';
+// ถ้า session มีอยู่แล้ว → ข้าม login
+const raw = sessionStorage.getItem('pm_user');
+if (raw) showHome(JSON.parse(raw));
 
-const FORM_FIELD_IDS = [
-  'f-station','f-pump','f-date','f-beforeafter','f-remark','f-approval',
-  'end_a_0','end_a_90','end_a_180','end_a_270',
-  'end_b_0','end_b_90','end_b_180','end_b_270',
-  'coupling_a_0','coupling_a_90','coupling_a_180','coupling_a_270',
-  'coupling_b_0','coupling_b_90','coupling_b_180','coupling_b_270',
-  'j-ok','j-ng'
-];
+async function doLogin() {
+  const emId = document.getElementById('l-emid').value.trim();
+  const pw   = document.getElementById('l-pw').value.trim();
+  if (!emId||!pw) { showErr('กรุณากรอก EmID และ Password'); return; }
+  hideErr();
+  const btn = document.getElementById('btn-login');
+  btn.disabled=true; btn.textContent='กำลังตรวจสอบ...';
+  try {
+    const res  = await fetch(GAS_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'login', emId, password:pw})
+    });
+    const json = await res.json();
+    if (json.status==='ok') {
+      const user = {emId:json.emId, name:json.name, sig:json.sig||'', password:pw};
+      sessionStorage.setItem('pm_user', JSON.stringify(user));
+      showHome(user);
+    } else { showErr(json.message||'EmID หรือ Password ไม่ถูกต้อง'); }
+  } catch(e) { showErr('เชื่อมต่อ Server ไม่สำเร็จ'); }
+  finally { btn.disabled=false; btn.textContent='เข้าสู่ระบบ'; }
+}
 
-// ============================================================
-//  LOGIN / LOGOUT
-// ── SESSION ──
-function initSession() {
-  const raw = sessionStorage.getItem('pm_user');
-  if (!raw) { window.location.href = 'index.html'; return; }
-  currentUser = JSON.parse(raw);
-  document.getElementById('t-user-label').textContent = censorName(currentUser.name);
-  document.getElementById('f-inspector-name').value = censorName(currentUser.name);
-  init();
+function showHome(user) {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('home-screen').style.display='block';
+  document.getElementById('t-user').textContent=censorName(user.name);
 }
 
 function doLogout() {
   sessionStorage.removeItem('pm_user');
-  window.location.href = 'index.html';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('topbar').style.display='none';
+  document.getElementById('home-screen').style.display='none';
+  document.getElementById('l-emid').value='';
+  document.getElementById('l-pw').value='';
 }
 
-// ── เซ็นเซอร์ชื่อ: นายวัฒนาธร อ. → นายวัฒนาธร อ*** ──
+function showErr(m){ const e=document.getElementById('login-err'); e.textContent=m; e.classList.add('show'); }
+function hideErr(){ document.getElementById('login-err').classList.remove('show'); }
+
 function censorName(name) {
-  if (!name) return '';
-  const parts = String(name).trim().split(' ');
-  if (parts.length === 1) return parts[0].slice(0,2) + '***';
-  // เซ็นเซอร์นามสกุล (ส่วนสุดท้าย) เก็บแค่ตัวแรก
-  const last = parts[parts.length-1];
-  parts[parts.length-1] = last.slice(0,1) + '***';
+  if(!name) return '';
+  const parts=String(name).trim().split(' ');
+  if(parts.length===1) return parts[0].slice(0,2)+'***';
+  parts[parts.length-1]=parts[parts.length-1].slice(0,1)+'***';
   return parts.join(' ');
-}
-
-// ── NAV ──
-function goPage(id,btn) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  if(btn) btn.classList.add('active');
-  if(id==='dashboard') loadDashboard();
-}
-
-// ============================================================
-//  INIT
-// ============================================================
-async function init() {
-  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-  updateDocNo();
-  await Promise.all([loadEquipment(), loadApprovals()]);
-  buildSearchStation();
-}
-
-// ── EQUIPMENT ──
-async function loadEquipment() {
-  try {
-    const res = await apiFetch('equip');
-    equipData = res.data||[];
-    const stations = [...new Set(equipData.map(e=>e['สถานที่']))].sort();
-    ['f-station'].forEach(id=>{
-      const sel=document.getElementById(id);
-      sel.innerHTML='<option value="">— เลือก —</option>';
-      stations.forEach(s=>sel.innerHTML+='<option value="'+s+'">'+s+'</option>');
-    });
-  } catch(e) { toast('โหลด Equipment ไม่สำเร็จ','e'); }
-}
-
-function buildSearchStation() {
-  const stations = [...new Set(equipData.map(e=>e['สถานที่']))].sort();
-  const sel = document.getElementById('s-station');
-  sel.innerHTML = '<option value="">— เลือก —</option>';
-  stations.forEach(s=>sel.innerHTML+='<option value="'+s+'">'+s+'</option>');
-  sel.onchange = () => {
-    const st=sel.value;
-    const pumps=equipData.filter(e=>e['สถานที่']===st);
-    const ps=document.getElementById('s-pump');
-    ps.innerHTML='<option value="">— เลือก —</option>';
-    pumps.forEach(p=>ps.innerHTML+='<option value="'+p['หมายเลข']+'">'+p['Name']+'</option>');
-  };
-}
-
-function onStationChange() {
-  const st=document.getElementById('f-station').value;
-  const pumps=equipData.filter(e=>e['สถานที่']===st);
-  const sel=document.getElementById('f-pump');
-  sel.innerHTML='<option value="">— เลือกเครื่อง —</option>';
-  pumps.forEach(p=>sel.innerHTML+='<option value="'+p['หมายเลข']+'">'+p['Name']+' (Limit: '+p['Limit_Gap_Ring']+' mm)</option>');
-  selectedEquip=null;
-  document.getElementById('f-limit').value='';
-  document.getElementById('f-footer').value='';
-  updateDocNo();
-}
-
-function onPumpChange() {
-  const st=document.getElementById('f-station').value;
-  const pn=document.getElementById('f-pump').value;
-  selectedEquip=equipData.find(e=>e['สถานที่']===st&&String(e['หมายเลข'])===String(pn));
-  if(selectedEquip){
-    document.getElementById('f-limit').value=selectedEquip['Limit_Gap_Ring']+' mm';
-    document.getElementById('f-footer').value=selectedEquip['Footer_Im_ring']||'';
-    rechkAll();
-  }
-  document.getElementById('btn-edit').style.display='none';
-  updateDocNo();
-}
-
-// ── APPROVALS ──
-async function loadApprovals() {
-  try {
-    const res=await apiFetch('approval');
-    approvalData=res.data||[];
-    const sel=document.getElementById('f-approval');
-    sel.innerHTML='<option value="">— เลือก —</option>';
-    approvalData.forEach(a=>sel.innerHTML+='<option value="'+a['EmID']+'">'+censorName(a['Approval_Name'])+'</option>');
-  } catch(e) {}
-}
-
-function onApprovalChange() {
-  const id=document.getElementById('f-approval').value;
-  const a=approvalData.find(a=>String(a['EmID'])===String(id));
-  approvalRef=a?(a['Approval_Sign']||''):'';
-}
-
-// ── DOC NO ──
-function updateDocNo() {
-  if(editMode){
-    document.getElementById('docno-box').textContent=editDocNo||'—';
-    return;
-  }
-  const date=document.getElementById('f-date').value;
-  const st=document.getElementById('f-station').value;
-  const pn=document.getElementById('f-pump').value;
-  const box=document.getElementById('docno-box');
-  if(!date||!st||!pn){box.textContent='—';return;}
-  const ds=date.replace(/-/g,'').slice(2);
-  box.textContent=ds+'_'+st+'_'+pn+'Imp###';
-}
-
-// ── LIMIT CHECK ──
-function chk(inp) {
-  if(!selectedEquip) return;
-  const lim=parseFloat(selectedEquip['Limit_Gap_Ring']);
-  const val=parseFloat(inp.value);
-  inp.classList.toggle('over',!isNaN(val)&&!isNaN(lim)&&val>lim);
-}
-function rechkAll(){document.querySelectorAll('.ci').forEach(i=>chk(i));}
-
-// ── COLLECT FORM ──
-function collectForm() {
-  return {
-    emId:          currentUser?.emId||'',
-    password:      currentUser?.password||'',
-    station:       document.getElementById('f-station').value,
-    pump_no:       document.getElementById('f-pump').value,
-    date:          document.getElementById('f-date').value,
-    footer:        selectedEquip?(selectedEquip['Footer_Im_ring']||''):'',
-    limit:         selectedEquip?(selectedEquip['Limit_Gap_Ring']||''):'',
-    before_after:  document.getElementById('f-beforeafter').value,
-    judgement:     document.querySelector('input[name="judge"]:checked')?.value||'',
-    remark:        document.getElementById('f-remark').value,
-    inspector_name:currentUser?.name||'',
-    approval_name: document.getElementById('f-approval').selectedOptions[0]?.text||'',
-    end_a_0:document.getElementById('end_a_0').value||'',
-    end_a_90:document.getElementById('end_a_90').value||'',
-    end_a_180:document.getElementById('end_a_180').value||'',
-    end_a_270:document.getElementById('end_a_270').value||'',
-    end_b_0:document.getElementById('end_b_0').value||'',
-    end_b_90:document.getElementById('end_b_90').value||'',
-    end_b_180:document.getElementById('end_b_180').value||'',
-    end_b_270:document.getElementById('end_b_270').value||'',
-    coupling_a_0:document.getElementById('coupling_a_0').value||'',
-    coupling_a_90:document.getElementById('coupling_a_90').value||'',
-    coupling_a_180:document.getElementById('coupling_a_180').value||'',
-    coupling_a_270:document.getElementById('coupling_a_270').value||'',
-    coupling_b_0:document.getElementById('coupling_b_0').value||'',
-    coupling_b_90:document.getElementById('coupling_b_90').value||'',
-    coupling_b_180:document.getElementById('coupling_b_180').value||'',
-    coupling_b_270:document.getElementById('coupling_b_270').value||'',
-  };
-}
-
-function validateForm() {
-  const fd=collectForm();
-  if(!fd.station||!fd.pump_no||!fd.date) return 'กรุณาเลือก Station เครื่อง และวันที่';
-  if(!fd.judgement)   return 'กรุณาระบุ Judgement';
-  if(!document.getElementById('f-approval').value) return 'กรุณาเลือก ผู้อนุมัติ';
-  return null;
-}
-
-function lockForm(docNo) {
-  editMode=true; editDocNo=docNo;
-  document.getElementById('docno-box').textContent=docNo;
-  FORM_FIELD_IDS.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.disabled=true;
-  });
-  document.getElementById('btn-save').disabled=true;
-  document.getElementById('btn-save-pdf').disabled=false;
-  document.getElementById('btn-edit').style.display='inline-flex';
-}
-
-function unlockForm() {
-  FORM_FIELD_IDS.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.disabled=false;
-  });
-  document.getElementById('btn-save').disabled=false;
-  document.getElementById('btn-save-pdf').disabled=false;
-  setFormStatus('&#9998; โหมดแก้ไข — กดบันทึกเพื่อบันทึกทับข้อมูลเดิม','amber');
-}
-
-// ── SAVE (ใหม่หรือบันทึกทับ) ──
-async function saveOnly() {
-  const err=validateForm(); if(err){toast(err,'e');return;}
-  setBtns(true,'กำลังบันทึก...');
-  try {
-    const fd=collectForm();
-    // ถ้าอยู่ใน edit mode → update; ถ้าใหม่ → save
-    if(editMode && editDocNo){
-      fd.action='update'; fd.docNo=editDocNo;
-    } else {
-      fd.action='save';
-    }
-    const res=await apiPost(fd);
-    if(res.status==='ok'){
-      const docNo=editDocNo||res.docNo;
-      toast('บันทึกสำเร็จ เลขที่: '+docNo,'s');
-      setFormStatus('&#9989; บันทึกแล้ว เลขที่: '+docNo,'green');
-      lockForm(docNo);
-    } else { toast(res.message||'บันทึกไม่สำเร็จ','e'); }
-  } catch(e){ toast('เชื่อมต่อ Server ไม่สำเร็จ','e'); }
-  finally { setBtns(false); }
-}
-
-// ── SAVE + PDF ──
-async function saveAndPDF() {
-  const err=validateForm(); if(err){toast(err,'e');return;}
-  if(!currentUser) return;
-  setBtns(true,'กำลังบันทึก...');
-  try {
-    const fd=collectForm();
-    let docNo=editDocNo;
-    if(!editMode){
-      fd.action='save';
-      const res=await apiPost(fd);
-      if(res.status!=='ok'){toast(res.message||'บันทึกไม่สำเร็จ','e');return;}
-      docNo=res.docNo;
-      lockForm(docNo);
-      toast('บันทึกสำเร็จ เลขที่: '+docNo,'s');
-    } else {
-      // update ก่อน แล้วค่อย PDF
-      fd.action='update'; fd.docNo=docNo;
-      const res=await apiPost(fd);
-      if(res.status!=='ok'){toast(res.message||'อัพเดตไม่สำเร็จ','e');return;}
-    }
-    document.getElementById('btn-save-pdf').textContent='กำลังสร้าง PDF...';
-    const pdfData=Object.assign({},fd,{docNo});
-    const doc=await generatePDF(pdfData);
-    const b64=doc.output('datauristring').split(',')[1];
-    document.getElementById('btn-save-pdf').textContent='กำลังอัพโหลด Drive...';
-    const dr=await apiPost({action:'save_pdf',emId:currentUser.emId,
-      password:currentUser?.password||'',docNo,pdfBase64:b64});
-    if(dr.status==='ok'){
-      toast('PDF อัพโหลด Drive สำเร็จ','s');
-      setFormStatus('&#9989; บันทึก + PDF แล้ว เลขที่: '+docNo+' — <a href="'+dr.fileUrl+'" target="_blank" style="color:var(--teal)">เปิด PDF</a>','green');
-    } else { toast('PDF Drive: '+dr.message,'e'); }
-  } catch(e){ toast('เชื่อมต่อ Server ไม่สำเร็จ','e'); }
-  finally {
-    document.getElementById('btn-save-pdf').textContent='บันทึก + สร้าง PDF';
-    document.getElementById('btn-save-pdf').disabled=false;
-    document.getElementById('btn-edit').style.display='inline-flex';
-  }
-}
-
-function setBtns(dis, label) {
-  ['btn-save','btn-save-pdf'].forEach(id=>{
-    const b=document.getElementById(id);
-    if(b){ b.disabled=dis; }
-  });
-  if(!dis){
-    document.getElementById('btn-save').textContent='บันทึกข้อมูล';
-    document.getElementById('btn-save-pdf').textContent='บันทึก + สร้าง PDF';
-  }
-}
-
-function setFormStatus(html,color){
-  const el=document.getElementById('form-status');
-  el.innerHTML=html;
-  el.style.color=color==='green'?'var(--green)':color==='teal'?'var(--teal)':'var(--red)';
-}
-
-function clearSearchDate() {
-  document.getElementById('s-from').value='';
-  document.getElementById('s-to').value='';
-  document.getElementById('s-date-label').textContent='';
-}
-
-// ── SEARCH RECORD ──
-async function searchRecord() {
-  const docno  = document.getElementById('s-docno').value.trim();
-  const st     = document.getElementById('s-station').value;
-  const pn     = document.getElementById('s-pump').value;
-  const from   = document.getElementById('s-from').value;
-  const to     = document.getElementById('s-to').value;
-  const status = document.getElementById('search-status');
-  const lbl    = document.getElementById('s-date-label');
-
-  // update date label
-  if(lbl){
-    if(from||to){
-      const fmt=d=>new Date(d).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
-      lbl.textContent = from&&to?'📅 '+fmt(from)+' — '+fmt(to)
-        :from?'📅 ตั้งแต่ '+fmt(from):'📅 ถึง '+fmt(to);
-    } else { lbl.textContent=''; }
-  }
-
-  const fromTs = from ? new Date(from).setHours(0,0,0,0) : null;
-  const toTs   = to   ? new Date(to).setHours(23,59,59,999) : null;
-
-  status.textContent='กำลังค้นหา...'; status.style.color='var(--text3)';
-  await loadAllRecords(true);
-
-  // ค้นหาจากเลขที่เอกสาร
-  if(docno) {
-    const found = allRecords.find(r=>String(r['เลขที่เอกสาร'])===docno);
-    if(!found){status.innerHTML='&#10060; ไม่พบเลขที่เอกสาร: '+docno;status.style.color='var(--red)';return;}
-    fillForm(found);
-    status.innerHTML='&#9989; โหลด <strong>'+docno+'</strong> สำเร็จ';
-    status.style.color='var(--green)';
-    return;
-  }
-
-  // ค้นหาจาก station + pump
-  if(st && pn) {
-    let matches = allRecords.filter(r=>
-      r['สถานที่']===st && String(r['หมายเลข'])===String(pn)
-    );
-
-    // กรองด้วยช่วงวันที่ถ้ามี
-    if(fromTs||toTs){
-      matches=matches.filter(r=>{
-        const d=parseRecordDate(r);
-        if(!d) return false;
-        const ts=d.getTime();
-        if(fromTs && ts<fromTs) return false;
-        if(toTs   && ts>toTs)   return false;
-        return true;
-      });
-    }
-
-    if(!matches.length){
-      status.innerHTML='&#10060; ไม่พบข้อมูล'+(fromTs||toTs?' ในช่วงวันที่ที่เลือก':'ของเครื่องนี้');
-      status.style.color='var(--red)'; return;
-    }
-
-    if(matches.length===1) {
-      fillForm(matches[0]);
-      status.innerHTML='&#9989; โหลด <strong>'+matches[0]['เลขที่เอกสาร']+'</strong> สำเร็จ';
-      status.style.color='var(--green)';
-      return;
-    }
-
-    // มีหลายรายการ → แสดง list ให้เลือก
-    matches.sort((a,b)=>String(b['เลขที่เอกสาร']).localeCompare(String(a['เลขที่เอกสาร'])));
-    const listHtml = matches.map(r=>{
-      const dt=r['วันที่']?new Date(r['วันที่']).toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'}):'—';
-      const jd=r['สรุปผล']||'—';
-      const jcl=jd==='Acceptable'?'b-ok':jd==='Not Acceptable'?'b-ng':'b-st';
-      const ba=r['Before or After']||'—';
-      const bcl=ba==='Before'?'b-bef':ba==='After'?'b-aft':'';
-      return '<div onclick="selectSearchResult(\''+r['เลขที่เอกสาร']+'\')" '
-        +'style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);'
-        +'border-radius:8px;cursor:pointer;background:#fff;transition:background .15s" '
-        +'onmouseover="this.style.background=\'var(--blue3)\'" onmouseout="this.style.background=\'#fff\'">'
-        +'<span style="font-family:var(--mono);font-size:12px;color:var(--blue2);font-weight:600;flex:1">'+r['เลขที่เอกสาร']+'</span>'
-        +'<span style="font-size:11px;color:var(--text3)">'+dt+'</span>'
-        +'<span class="badge '+bcl+'" style="flex-shrink:0">'+ba+'</span>'
-        +'<span class="badge '+jcl+'" style="flex-shrink:0">'+jd+'</span>'
-        +'</div>';
-    }).join('');
-    status.innerHTML='<div style="margin-bottom:8px;font-weight:600;color:var(--amber)">&#9888; พบ '+matches.length+' รายการ — กรุณาเลือก</div>'
-      +'<div style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto">'+listHtml+'</div>';
-    status.style.color='var(--text)';
-    return;
-  }
-
-  status.textContent='กรุณาระบุเลขที่เอกสาร หรือ เลือก Station + หมายเลข';
-  status.style.color='var(--amber)';
-}
-
-async function selectSearchResult(docNo) {
-  const status=document.getElementById('search-status');
-  const found=allRecords.find(r=>String(r['เลขที่เอกสาร'])===String(docNo));
-  if(!found){status.innerHTML='&#10060; ไม่พบข้อมูล';status.style.color='var(--red)';return;}
-  fillForm(found);
-  status.innerHTML='&#9989; โหลด <strong>'+docNo+'</strong> สำเร็จ';
-  status.style.color='var(--green)';
-}
-
-function fillForm(r) {
-  // unlock ก่อน เพื่อให้ set ค่าได้
-  FORM_FIELD_IDS.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.disabled=false;
-  });
-
-  editMode=true;
-  editDocNo=String(r['เลขที่เอกสาร']||'');
-
-  // set station → pump
-  const st=String(r['สถานที่']||'');
-  const pn=String(r['หมายเลข']||'');
-  document.getElementById('f-station').value=st;
-  onStationChange();
-  setTimeout(()=>{
-    document.getElementById('f-pump').value=pn;
-    onPumpChange();
-
-    document.getElementById('f-date').value=String(r['วันที่']||'').slice(0,10);
-    document.getElementById('f-beforeafter').value=r['Before or After']||'Before';
-    document.getElementById('f-remark').value=r['หมายเหตุ']||'';
-
-    // clearance values
-    const fields=['end_a_0','end_a_90','end_a_180','end_a_270',
-      'end_b_0','end_b_90','end_b_180','end_b_270',
-      'coupling_a_0','coupling_a_90','coupling_a_180','coupling_a_270',
-      'coupling_b_0','coupling_b_90','coupling_b_180','coupling_b_270'];
-    const keys=['End_a_0','End_a_90','End_a_180','End_a_270',
-      'End_b_0','End_b_90','End_b_180','End_b_270',
-      'Coupling_a_0','Coupling_a_90','Coupling_a_180','Coupling_a_270',
-      'Coupling_b_0','Coupling_b_90','Coupling_b_180','Coupling_b_270'];
-    fields.forEach((f,i)=>{
-      const el=document.getElementById(f);
-      if(el) el.value=r[keys[i]]||'';
-    });
-
-    // judgement
-    const jd=r['สรุปผล']||'';
-    document.querySelectorAll('input[name="judge"]').forEach(radio=>{
-      radio.checked=(radio.value===jd);
-    });
-
-    // approval
-    const aprName=String(r['ผู้อนุมัติ']||'');
-    const aprEl=document.getElementById('f-approval');
-    [...aprEl.options].forEach(o=>{
-      if(o.text===aprName||censorName(o.text)===censorName(aprName)) aprEl.value=o.value;
-    });
-
-    rechkAll();
-
-    // lock ฟอร์ม + แสดงปุ่มแก้ไข
-    lockForm(editDocNo);
-    setFormStatus('&#128269; โหลดข้อมูล <strong>'+editDocNo+'</strong> แล้ว — กด "แก้ไขข้อมูล" เพื่อแก้ไข','teal');
-    document.getElementById('docno-box').textContent=editDocNo;
-  }, 150);
-}
-
-function clearForm() {
-  editMode=false; editDocNo='';
-  document.getElementById('f-station').value='';
-  document.getElementById('f-pump').innerHTML='<option value="">— เลือก —</option>';
-  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('f-limit').value='';
-  document.getElementById('f-footer').value='';
-  document.getElementById('f-beforeafter').value='Before';
-  document.getElementById('f-remark').value='';
-  document.getElementById('f-approval').value='';
-  document.querySelectorAll('.ci').forEach(i=>{i.value='';i.classList.remove('over');});
-  const ch=document.querySelector('input[name="judge"]:checked');
-  if(ch) ch.checked=false;
-  document.getElementById('docno-box').textContent='—';
-  // unlock all fields
-  FORM_FIELD_IDS.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.disabled=false;
-  });
-  document.getElementById('btn-save').disabled=false;
-  document.getElementById('btn-save-pdf').disabled=false;
-  document.getElementById('btn-edit').style.display='none';
-  document.getElementById('form-status').innerHTML='';
-  document.getElementById('search-status').textContent='';
-  selectedEquip=null; approvalRef='';
-  updateDocNo();
-}
-
-async function loadAllRecords(force=false) {
-  if(!force && allRecords.length) return;
-  try {
-    const res=await apiFetch('read');
-    allRecords=res.data||[];
-  } catch(e){}
-}
-
-// ============================================================
-//  PDF GENERATOR
-// ============================================================
-async function generatePDF(fd) {
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,M=15; let y=15;
-
-  const ln=(x1,y1,x2,y2,c)=>{doc.setDrawColor(...(c||[180,180,180]));doc.line(x1,y1,x2,y2);};
-  const tx=(t,x,yy,o)=>{
-    o=o||{};
-    doc.setFontSize(o.size||9);
-    doc.setFont('helvetica',o.bold?'bold':'normal');
-    doc.setTextColor(...(o.color||[30,30,30]));
-    doc.text(String(t||''),x,yy,{align:o.align||'left'});
-  };
-  const bx=(x,yy,w,h,fill)=>{
-    if(fill){doc.setFillColor(...fill);doc.rect(x,yy,w,h,'F');}
-    doc.setDrawColor(180,180,180);doc.rect(x,yy,w,h,'S');
-  };
-
-  doc.setFillColor(24,95,165);doc.rect(M,y,W-M*2,10,'F');
-  tx('Clearance between Impeller and Liner Ring',W/2,y+7,
-    {size:12,bold:true,color:[255,255,255],align:'center'});
-  y+=14;
-
-  tx('Station :',M,y+4,{size:9,bold:true});
-  bx(M+18,y,35,6);tx(fd.station||'',M+20,y+4.5,{size:9});
-  tx('Date :',M+60,y+4,{size:9,bold:true});
-  bx(M+73,y,35,6);tx(fd.date||'',M+75,y+4.5,{size:9});
-  tx('Doc No. :',M+115,y+4,{size:9,bold:true});
-  bx(M+130,y,48,6);tx(fd.docNo||'',M+132,y+4.5,{size:7.5,color:[20,80,160]});
-  y+=10;
-
-  tx('Pump No. :',M,y+4,{size:9,bold:true});
-  bx(M+20,y,25,6);tx(String(fd.pump_no||''),M+22,y+4.5,{size:9});
-  tx('Before/After :',M+55,y+4,{size:9,bold:true});
-  bx(M+82,y,25,6);tx(fd.before_after||'',M+84,y+4.5,{size:9});
-  tx('Permissible Limit :',M+115,y+4,{size:9,bold:true});
-  bx(M+148,y,18,6);tx(String(fd.limit||''),M+150,y+4.5,{size:9,color:[15,110,86]});
-  tx('mm',M+168,y+4,{size:8});
-  y+=10;
-
-  tx('Document Ref. :',M,y+4,{size:8,bold:true,color:[100,100,100]});
-  tx(fd.footer||'',M+30,y+4,{size:8,color:[100,100,100]});
-  y+=10;ln(M,y,W-M,y);y+=6;
-
-  doc.setFillColor(230,241,251);doc.rect(M,y,W-M*2,7,'F');
-  tx('Clearance Data  (Motor side view)',W/2,y+5,
-    {size:10,bold:true,color:[12,68,124],align:'center'});
-  y+=11;
-
-  const cW=[28,10,25,25,25,25];
-  const cX=[M];cW.forEach((w,i)=>{if(i>0)cX.push(cX[i-1]+cW[i-1]);});
-  doc.setFillColor(24,95,165);
-  let hX=M;
-  ['Position','','0 deg','90 deg','180 deg','270 deg'].forEach((c,i)=>{
-    doc.rect(hX,y,cW[i],7,'F');
-    tx(c,hX+cW[i]/2,y+5,{size:9,bold:true,color:[255,255,255],align:'center'});
-    hX+=cW[i];
-  });y+=7;
-
-  const rows=[
-    {s:'End side',   a:'a',v:[fd.end_a_0,fd.end_a_90,fd.end_a_180,fd.end_a_270]},
-    {s:'',           a:'b',v:[fd.end_b_0,fd.end_b_90,fd.end_b_180,fd.end_b_270]},
-    {s:'Coupling side',a:'a',v:[fd.coupling_a_0,fd.coupling_a_90,fd.coupling_a_180,fd.coupling_a_270]},
-    {s:'',           a:'b',v:[fd.coupling_b_0,fd.coupling_b_90,fd.coupling_b_180,fd.coupling_b_270]},
-  ];
-  const lim=parseFloat(fd.limit)||9999;
-  rows.forEach((r,ri)=>{
-    const rH=8,bg=ri%2===0?[248,247,244]:[255,255,255];
-    if(r.s){
-      doc.setFillColor(...bg);doc.rect(cX[0],y,cW[0],rH*2,'F');
-      doc.setDrawColor(180,180,180);doc.rect(cX[0],y,cW[0],rH*2,'S');
-      tx(r.s,cX[0]+cW[0]/2,y+rH,{size:8,bold:true,align:'center',color:[40,40,40]});
-    }
-    doc.setFillColor(...bg);doc.rect(cX[1],y,cW[1],rH,'F');
-    doc.setDrawColor(180,180,180);doc.rect(cX[1],y,cW[1],rH,'S');
-    tx(r.a,cX[1]+cW[1]/2,y+5.5,{size:9,bold:true,align:'center',color:[80,80,80]});
-    r.v.forEach((val,vi)=>{
-      const cx=cX[vi+2],cw=cW[vi+2];
-      const nv=parseFloat(val),ov=!isNaN(nv)&&nv>lim;
-      doc.setFillColor(...(ov?[252,235,235]:bg));
-      doc.rect(cx,y,cw,rH,'F');doc.setDrawColor(180,180,180);doc.rect(cx,y,cw,rH,'S');
-      if(val!==''&&val!=null)
-        tx(String(val),cx+cw/2,y+5.5,{size:9,align:'center',color:ov?[163,45,45]:[30,30,30]});
-    });
-    y+=rH;
-  });y+=6;
-
-  const isOk=fd.judgement==='Acceptable';
-  doc.setFillColor(230,241,251);doc.rect(M,y,55,8,'F');
-  doc.setDrawColor(180,180,180);doc.rect(M,y,55,8,'S');
-  tx('Judgement :',M+2,y+5.5,{size:9,bold:true,color:[12,68,124]});
-  doc.setFillColor(...(isOk?[234,243,222]:[252,235,235]));
-  doc.rect(M+57,y,50,8,'F');
-  doc.setDrawColor(...(isOk?[99,153,34]:[163,45,45]));
-  doc.rect(M+57,y,50,8,'S');
-  tx(fd.judgement||'',M+82,y+5.5,{size:9,bold:true,align:'center',
-    color:isOk?[59,109,17]:[163,45,45]});
-  if(fd.remark){tx('Remark :',M+115,y+5.5,{size:8,bold:true});tx(fd.remark,M+132,y+5.5,{size:8});}
-  y+=14;
-
-  ln(M,y,W-M,y);y+=6;
-  const sW=(W-M*2-8)/2;
-  bx(M,y,sW,22);
-  tx('Person in charge :',M+2,y+5,{size:8,bold:true,color:[80,80,80]});
-  tx(fd.inspector_name||'',M+sW/2,y+14,{size:9,bold:true,align:'center'});
-  ln(M+8,y+18,M+sW-8,y+18);
-  tx('Signature',M+sW/2,y+22,{size:7.5,color:[130,130,130],align:'center'});
-  const s2=M+sW+8;
-  bx(s2,y,sW,22);
-  tx('Approved by :',s2+2,y+5,{size:8,bold:true,color:[80,80,80]});
-  tx(fd.approval_name||'',s2+sW/2,y+14,{size:9,bold:true,align:'center'});
-  ln(s2+8,y+18,s2+sW-8,y+18);
-  tx('Signature',s2+sW/2,y+22,{size:7.5,color:[130,130,130],align:'center'});
-  y+=28;
-
-  ln(M,y,W-M,y);y+=4;
-  tx('Metropolitan Waterworks Authority — PM Record System',
-    W/2,y+3,{size:7,color:[150,150,150],align:'center'});
-  tx('Generated: '+new Date().toLocaleString('th-TH'),
-    W/2,y+7,{size:7,color:[150,150,150],align:'center'});
-  return doc;
-}
-
-// ============================================================
-//  DASHBOARD
-// ============================================================
-const COLS = [
-  {k:'เลขที่เอกสาร',l:'เลขที่เอกสาร'},
-  {k:'วันที่',l:'วันที่'},
-  {k:'สถานที่',l:'สถานที่'},
-  {k:'หมายเลข',l:'เครื่อง'},
-  {k:'Before or After',l:'B/A'},
-  {k:'Limit_Gap_Ring',l:'Limit'},
-  {k:'End_a_0',l:'Ea0'},{k:'End_a_90',l:'Ea90'},
-  {k:'End_a_180',l:'Ea180'},{k:'End_a_270',l:'Ea270'},
-  {k:'End_b_0',l:'Eb0'},{k:'End_b_90',l:'Eb90'},
-  {k:'End_b_180',l:'Eb180'},{k:'End_b_270',l:'Eb270'},
-  {k:'Coupling_a_0',l:'Ca0'},{k:'Coupling_a_90',l:'Ca90'},
-  {k:'Coupling_a_180',l:'Ca180'},{k:'Coupling_a_270',l:'Ca270'},
-  {k:'Coupling_b_0',l:'Cb0'},{k:'Coupling_b_90',l:'Cb90'},
-  {k:'Coupling_b_180',l:'Cb180'},{k:'Coupling_b_270',l:'Cb270'},
-  {k:'สรุปผล',l:'Judgement'},
-  {k:'ผู้ตรวจวัด',l:'Inspector'},
-  {k:'ReportFile_Impeller',l:'PDF'},
-];
-
-async function loadDashboard() {
-  try {
-    const res=await apiFetch('read');
-    allRecords=res.data||[];
-    filteredRec=[...allRecords];
-    // build station filter
-    const stations=[...new Set(allRecords.map(r=>r['สถานที่']))].filter(Boolean).sort();
-    const ssel=document.getElementById('d-st');
-    const cur=ssel.value;
-    ssel.innerHTML='<option value="">ทุกสถานี</option>';
-    stations.forEach(s=>ssel.innerHTML+='<option value="'+s+'"'+(s===cur?' selected':'')+'>'+s+'</option>');
-    renderKPIs();
-    buildDashHead();
-    filterDash();
-  } catch(e){
-    document.getElementById('dtbl-body').innerHTML='<tr><td colspan="'+COLS.length+'" class="empty">โหลดข้อมูลไม่สำเร็จ</td></tr>';
-  }
-}
-
-function renderKPIs() {
-  const total=allRecords.length;
-  const ok=allRecords.filter(r=>r['สรุปผล']==='Acceptable').length;
-  const ng=allRecords.filter(r=>r['สรุปผล']==='Not Acceptable').length;
-  const bef=allRecords.filter(r=>r['Before or After']==='Before').length;
-  const aft=allRecords.filter(r=>r['Before or After']==='After').length;
-  document.getElementById('kpi-grid').innerHTML=
-    kpi(total,'ทั้งหมด','var(--blue)')+
-    kpi(ok,'Acceptable','var(--green)')+
-    kpi(ng,'Not Acceptable','var(--red)')+
-    kpi(bef,'Before','var(--amber)')+
-    kpi(aft,'After','var(--teal)');
-}
-function kpi(n,l,c){
-  return '<div class="kpi-card" style="border-top-color:'+c+'"><div class="kpi-n" style="color:'+c+'">'+n+'</div><div class="kpi-l">'+l+'</div></div>';
-}
-
-function buildDashHead() {
-  document.getElementById('dtbl-head').innerHTML='<tr>'+
-    COLS.map(c=>'<th onclick="sortBy(\''+c.k+'\')" id="th-'+c.k.replace(/[^a-zA-Z0-9]/g,'_')+'">'+c.l+'</th>').join('')+
-    '</tr>';
-}
-
-function parseRecordDate(r) {
-  const v = r['วันที่'];
-  if (!v) return null;
-  // รองรับทั้ง "yyyy-MM-dd", Date object, และ string อื่นๆ
-  const s = String(v).trim();
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-    const d = new Date(s);
-    return isNaN(d) ? null : d;
-  }
-  const d = new Date(s);
-  return isNaN(d) ? null : d;
-}
-
-function clearDateRange() {
-  const f=document.getElementById('d-from');
-  const t=document.getElementById('d-to');
-  if(f) f.value='';
-  if(t) t.value='';
-  const lbl=document.getElementById('date-range-label');
-  if(lbl) lbl.textContent='';
-  filterDash();
-}
-
-function filterDash() {
-  const q    = (document.getElementById('d-search')?.value||'').toLowerCase();
-  const st   = document.getElementById('d-st').value;
-  const from = document.getElementById('d-from')?.value||'';
-  const to   = document.getElementById('d-to')?.value||'';
-  const ba   = document.getElementById('d-ba').value;
-  const jd   = document.getElementById('d-jd').value;
-  const fromTs = from ? new Date(from).setHours(0,0,0,0) : null;
-  const toTs   = to   ? new Date(to).setHours(23,59,59,999) : null;
-
-  // อัพเดต label
-  const lbl=document.getElementById('date-range-label');
-  if(lbl){
-    if(from||to){
-      const fmt=d=>new Date(d).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
-      lbl.textContent = from&&to ? '📅 '+fmt(from)+' — '+fmt(to)
-        : from ? '📅 ตั้งแต่ '+fmt(from)
-        : '📅 ถึง '+fmt(to);
-    } else { lbl.textContent=''; }
-  }
-
-  filteredRec = allRecords.filter(r=>{
-    if(st && r['สถานที่']!==st) return false;
-    if(ba && r['Before or After']!==ba) return false;
-    if(jd && r['สรุปผล']!==jd) return false;
-    if(fromTs||toTs){
-      const d=parseRecordDate(r);
-      if(!d) return false;
-      const ts=d.getTime();
-      if(fromTs && ts<fromTs) return false;
-      if(toTs   && ts>toTs)   return false;
-    }
-    if(q){
-      const hay=COLS.map(c=>String(r[c.k]||'')).join(' ').toLowerCase();
-      if(!hay.includes(q)) return false;
-    }
-    return true;
-  });
-  if(sortCol) doSort();
-  curPage=1;
-  renderTable();
-}
-
-function sortBy(col) {
-  if(sortCol===col) sortDir*=-1;
-  else { sortCol=col; sortDir=1; }
-  doSort(); renderTable();
-  // update header arrows
-  document.querySelectorAll('.dtbl th').forEach(th=>{
-    th.classList.remove('sort-asc','sort-desc');
-  });
-  const thId='th-'+col.replace(/[^a-zA-Z0-9]/g,'_');
-  const th=document.getElementById(thId);
-  if(th) th.classList.add(sortDir===1?'sort-asc':'sort-desc');
-}
-
-function doSort() {
-  filteredRec.sort((a,b)=>{
-    const av=String(a[sortCol]||''), bv=String(b[sortCol]||'');
-    const an=parseFloat(av), bn=parseFloat(bv);
-    if(!isNaN(an)&&!isNaN(bn)) return (an-bn)*sortDir;
-    return av.localeCompare(bv,undefined,{numeric:true})*sortDir;
-  });
-}
-
-function renderTable() {
-  const total=filteredRec.length;
-  const pages=Math.ceil(total/PAGE_SIZE)||1;
-  if(curPage>pages) curPage=pages;
-  const start=(curPage-1)*PAGE_SIZE;
-  const slice=filteredRec.slice(start,start+PAGE_SIZE);
-
-  if(!slice.length){
-    document.getElementById('dtbl-body').innerHTML='<tr><td colspan="'+COLS.length+'" class="empty">ไม่มีข้อมูล</td></tr>';
-    document.getElementById('pgn').innerHTML='';
-    return;
-  }
-
-  document.getElementById('dtbl-body').innerHTML=slice.map(r=>{
-    const lim=parseFloat(r['Limit_Gap_Ring'])||9999;
-    const ba=r['Before or After']||'—';
-    const jd=r['สรุปผล']||'—';
-    const jcl=jd==='Acceptable'?'b-ok':jd==='Not Acceptable'?'b-ng':'b-st';
-    const bcl=ba==='Before'?'b-bef':ba==='After'?'b-aft':'';
-    const pdfUrl=r['ReportFile_Impeller']||'';
-
-    return '<tr>'+COLS.map(c=>{
-      const v=r[c.k];
-      if(c.k==='สรุปผล') return '<td><span class="badge '+jcl+'">'+jd+'</span></td>';
-      if(c.k==='Before or After') return '<td><span class="badge '+bcl+'">'+ba+'</span></td>';
-      if(c.k==='ReportFile_Impeller') return '<td>'+(pdfUrl?'<a href="'+pdfUrl+'" target="_blank" style="color:var(--teal);font-weight:600;font-size:11px">เปิด</a>':'—')+'</td>';
-      if(c.k==='ผู้ตรวจวัด') return '<td style="font-size:11px">'+censorName(String(v||''))+'</td>';
-      if(c.k==='เลขที่เอกสาร') return '<td style="font-family:var(--mono);font-size:11px;color:var(--text2)">'+String(v||'—')+'</td>';
-      if(c.k==='วันที่'){
-        const dt=v?new Date(v).toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'}):'—';
-        return '<td>'+dt+'</td>';
-      }
-      // clearance values
-      const numCols=['End_a_0','End_a_90','End_a_180','End_a_270',
-        'End_b_0','End_b_90','End_b_180','End_b_270',
-        'Coupling_a_0','Coupling_a_90','Coupling_a_180','Coupling_a_270',
-        'Coupling_b_0','Coupling_b_90','Coupling_b_180','Coupling_b_270'];
-      if(numCols.includes(c.k)){
-        const nv=parseFloat(v);
-        const ov=!isNaN(nv)&&nv>lim;
-        return '<td class="num'+(ov?' over-val':'')+'">'+(!isNaN(nv)?nv:'—')+'</td>';
-      }
-      return '<td>'+String(v||'—')+'</td>';
-    }).join('')+'</tr>';
-  }).join('');
-
-  // PAGINATION
-  let pgn='<div>แสดง '+(start+1)+'-'+Math.min(start+PAGE_SIZE,total)+' จาก '+total+' รายการ</div>';
-  pgn+='<div class="pgn-btns">';
-  pgn+='<button class="pgn-btn" onclick="changePage('+(curPage-1)+')" '+(curPage<=1?'disabled':'')+'>&#8249;</button>';
-  const from=Math.max(1,curPage-2), to=Math.min(pages,curPage+2);
-  if(from>1) pgn+='<button class="pgn-btn" onclick="changePage(1)">1</button>'+(from>2?'<span style="padding:0 4px">…</span>':'');
-  for(let i=from;i<=to;i++)
-    pgn+='<button class="pgn-btn'+(i===curPage?' active':'')+'" onclick="changePage('+i+')">'+i+'</button>';
-  if(to<pages) pgn+=(to<pages-1?'<span style="padding:0 4px">…</span>':'')+'<button class="pgn-btn" onclick="changePage('+pages+')">'+pages+'</button>';
-  pgn+='<button class="pgn-btn" onclick="changePage('+(curPage+1)+')" '+(curPage>=pages?'disabled':'')+'>&#8250;</button>';
-  pgn+='</div>';
-  document.getElementById('pgn').innerHTML=pgn;
-}
-
-function changePage(p){
-  const pages=Math.ceil(filteredRec.length/PAGE_SIZE)||1;
-  curPage=Math.max(1,Math.min(p,pages));
-  renderTable();
-  document.querySelector('.tcard').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ── API HELPERS ──
-async function apiFetch(action){
-  const res=await fetch(GAS_URL+'?action='+action+'&_='+Date.now());
-  return await res.json();
-}
-async function apiPost(payload){
-  const res=await fetch(GAS_URL,{method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify(payload)});
-  return await res.json();
-}
-
-// init from session
-initSession();
-
-// ── TOAST ──
-let _tt;
-function toast(msg,type){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.className='toast show '+(type||'');
-  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3500);
 }
 </script>
 </body>
