@@ -436,17 +436,7 @@ const COLS = [
 function initSession() {
   const raw = sessionStorage.getItem('pm_user');
   if (!raw) { window.location.href = 'index.html'; return; }
-  try { currentUser = JSON.parse(raw); } catch(e) { sessionStorage.clear(); window.location.href = 'index.html'; return; }
-  // validate cache format
-  try {
-    const ac = sessionStorage.getItem('approval_cache');
-    if (ac) JSON.parse(ac);
-    const ec = sessionStorage.getItem('rw_equip_cache');
-    if (ec) JSON.parse(ec);
-  } catch(e) {
-    sessionStorage.removeItem('approval_cache');
-    sessionStorage.removeItem('rw_equip_cache');
-  }
+  currentUser = JSON.parse(raw);
   document.getElementById('t-user-label').textContent = censorName(currentUser.name);
   document.getElementById('f-inspector-name').value = censorName(currentUser.name);
   init();
@@ -541,15 +531,9 @@ function onPumpChange() {
 
 async function loadApprovals(){
   try{
-    const cached = sessionStorage.getItem('approval_cache');
-    if(cached){
-      approvalData=JSON.parse(cached);
-    } else {
-      const res=await fetch(GAS_URL+'?action=approval&_='+Date.now());
-      const json=await res.json();
-      approvalData=json.data||[];
-      sessionStorage.setItem('approval_cache', JSON.stringify(approvalData));
-    }
+    const res=await fetch(GAS_URL+'?action=approval&_='+Date.now());
+    const json=await res.json();
+    approvalData=json.data||[];
     const sel=document.getElementById('f-approval');
     sel.innerHTML='<option value="">— เลือก —</option>';
     approvalData.forEach(a=>sel.innerHTML+='<option value="'+a['EmID']+'">'+censorName(a['Approval_Name'])+'</option>');
