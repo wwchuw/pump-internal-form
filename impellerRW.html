@@ -496,16 +496,16 @@ function buildSearchStation() {
     const pumps=filtered.filter(e=>e['สถานที่']===st);
     const ps=document.getElementById('s-pump');
     ps.innerHTML='<option value="">— เลือก —</option>';
-    pumps.forEach(p=>ps.innerHTML+='<option value="'+p['หมายเลข']+'">'+p['Name']+'</option>');
+    pumps.forEach(p=>ps.innerHTML+='<option value="'+p['หมายเลข']+'">'+p['ชื่ออุปกรณ์']+'</option>');
   };
 }
 
 function onStationChange() {
   const st=document.getElementById('f-station').value;
-  const filtered=equipData.filter(e=>e['สถานที่']===st&&e['Limit_Gap_ImpellerRW']&&e['Limit_Gap_ImpellerRW']!=='NA');
+  const filtered=equipData.filter(e=>e['สถานที่']===st);
   const sel=document.getElementById('f-pump');
   sel.innerHTML='<option value="">— เลือกเครื่อง —</option>';
-  filtered.forEach(p=>sel.innerHTML+='<option value="'+p['หมายเลข']+'">'+p['Name']+' (Limit: '+p['Limit_Gap_ImpellerRW']+' mm)</option>');
+  filtered.forEach(p=>sel.innerHTML+='<option value="'+p['หมายเลข']+'">'+p['ชื่ออุปกรณ์']+' (Limit: '+p['Limit_Gap_ImpellerRW']+' mm)</option>');
   selectedEquip=null;
   document.getElementById('f-limit').value='';
   document.getElementById('f-footer').value='';
