@@ -524,7 +524,17 @@ const FORM_FIELD_IDS = [
 function initSession() {
   const raw = sessionStorage.getItem('pm_user');
   if (!raw) { window.location.href = 'index.html'; return; }
-  currentUser = JSON.parse(raw);
+  try { currentUser = JSON.parse(raw); } catch(e) { sessionStorage.clear(); window.location.href = 'index.html'; return; }
+  // validate cache format
+  try {
+    const ac = sessionStorage.getItem('approval_cache');
+    if (ac) JSON.parse(ac);
+    const ec = sessionStorage.getItem('rw_equip_cache');
+    if (ec) JSON.parse(ec);
+  } catch(e) {
+    sessionStorage.removeItem('approval_cache');
+    sessionStorage.removeItem('rw_equip_cache');
+  }
   document.getElementById('t-user-label').textContent = censorName(currentUser.name);
   document.getElementById('f-inspector-name').value = censorName(currentUser.name);
   init();
