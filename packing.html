@@ -598,7 +598,6 @@ async function loadApprovals(){
     approvalData.forEach(a=>sel.innerHTML+='<option value="'+a['EmID']+'">'+censorName(a['Approval_Name'])+'</option>');
   }catch(e){}
 }
-}
 function onApprovalChange(){
   const id=document.getElementById('f-approval').value;
   const a=approvalData.find(a=>String(a['EmID'])===String(id));
