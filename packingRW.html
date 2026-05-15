@@ -542,15 +542,9 @@ async function init(){
 
 async function loadEquipment(){
   try{
-    const cached = sessionStorage.getItem('rw_equip_cache');
-    if(cached){
-      equipData=JSON.parse(cached);
-    } else {
-      const res=await fetch(GAS_URL+'?action=equip_rw&sheetId='+RW_SHEET_ID+'&_='+Date.now());
-      const json=await res.json();
-      equipData=json.data||[];
-      sessionStorage.setItem('rw_equip_cache', JSON.stringify(equipData));
-    }
+    const res=await fetch(GAS_URL+'?action=equip_rw&sheetId='+RW_SHEET_ID+'&_='+Date.now());
+    const json=await res.json();
+    equipData=json.data||[];
     const stations=[...new Set(equipData.map(e=>e['สถานที่']))].sort();
     const sel=document.getElementById('f-station');
     sel.innerHTML='<option value="">— เลือก —</option>';
@@ -598,9 +592,8 @@ function onPumpChange(){
 
 async function loadApprovals(){
   try{
-    const res=await fetch(GAS_URL+'?action=approval&_='+Date.now());
-    const json=await res.json();
-    approvalData=json.data||[];
+    const res=await apiFetch('approval');
+    approvalData=res.data||[];
     const sel=document.getElementById('f-approval');
     sel.innerHTML='<option value="">— เลือก —</option>';
     approvalData.forEach(a=>sel.innerHTML+='<option value="'+a['EmID']+'">'+censorName(a['Approval_Name'])+'</option>');
