@@ -665,6 +665,7 @@ function collectForm() {
     station:        document.getElementById('f-station').value,
     pump_no:        document.getElementById('f-pump').value,
     equip_name:     selectedEquip?(selectedEquip['อุปกรณ์']||''):'',
+    equip_name_full:selectedEquip?(selectedEquip['ชื่ออุปกรณ์']||''):'',
     date:           document.getElementById('f-date').value,
     footer:         selectedEquip?(selectedEquip['Footer_Align']||''):'',
     limit_angular:  selectedEquip?(selectedEquip['Limit_Angular']||''):'',
